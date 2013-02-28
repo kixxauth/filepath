@@ -29,7 +29,15 @@ exports.newPath = function newPath(path) {
         parser = opts.parser;
 
         FS.readFile(path, encoding, function (err, data) {
-            if (err) return d.fail(err);
+            var msg, e
+
+            if (err && err.code === 'ENOENT') {
+                return d.keep(null);
+            } else if (err && err.code === 'EISDIR') {
+                e = new Error("Cannot read '"+ path +"'; it is a directory.");
+                e.code = "path is directory";
+                return d.fail(e);
+            }
 
             switch (parser) {
             case 'ini':

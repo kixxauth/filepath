@@ -49,6 +49,51 @@ tests.push(function (done) {
 });
 
 tests.push(function (done) {
+    // .read() method - not found.
+
+    var path = FILEPATH.newPath('foo')
+
+    function onNotFound(rv) {
+        equal(rv, null, 'not found rv === null');
+    }
+
+    function onFailure(err) {
+        console.error(err.stack);
+        process.exit(1);
+    }
+
+    path.read()
+        .then(onNotFound)
+        .failure(onFailure)
+        .then(done)
+});
+
+tests.push(function (done) {
+    // .read() method - is directory.
+
+    var path = FILEPATH.newPath(__dirname)
+
+    function skip(rv) {
+        console.log(rv);
+        assert(false, 'should not be called');
+    }
+
+    function onFailure(err) {
+        equal(err.code, "path is directory", 'Error code');
+        equal(err.message, "Cannot read '"+ __dirname +"'; it is a directory.", 'Error message');
+    }
+
+    path.read()
+        .then(skip)
+        .failure(onFailure)
+        .failure(function (err) {
+            console.error(err, err.stack);
+            process.exit(1);
+        })
+        .then(done)
+});
+
+tests.push(function (done) {
     // .read() method - plain text.
 
     var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.ini')
@@ -95,7 +140,6 @@ tests.push(function (done) {
 
     function skip(rv) {
         assert(false, 'should not be called');
-        return done();
     }
 
     function onFailure(err) {
