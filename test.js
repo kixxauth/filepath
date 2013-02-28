@@ -36,6 +36,121 @@ tests.push(function (done) {
     return done();
 });
 
+tests.push(function (done) {
+    // .exists() method.
+
+    var path = FILEPATH.newPath('foo');
+    equal(path.exists(), false, 'exists() === false');
+
+    path = FILEPATH.newPath(__filename);
+    equal(path.exists(), true, 'exists() === true');
+
+    return done();
+});
+
+tests.push(function (done) {
+    // .read() method - plain text.
+
+    var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.ini')
+
+    function testPlainText(rv) {
+        equal(rv, 'foo=bar\n', 'plain text');
+    }
+
+    function onFailure(err) {
+        console.error(err.stack);
+        process.exit(1);
+    }
+
+    path.read()
+        .then(testPlainText)
+        .failure(onFailure)
+        .then(done)
+});
+
+tests.push(function (done) {
+    // .read() method - JSON.
+
+    var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.json')
+
+    function testJSON(rv) {
+        equal(rv.foo, 'bar', 'JSON');
+    }
+
+    function onFailure(err) {
+        console.error(err.stack);
+        process.exit(1);
+    }
+
+    path.read({parser: 'JSON'})
+        .then(testJSON)
+        .failure(onFailure)
+        .then(done)
+});
+
+tests.push(function (done) {
+    // .read() method - JSON w/error.
+
+    var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.ini')
+
+    function skip(rv) {
+        assert(false, 'should not be called');
+        return done();
+    }
+
+    function onFailure(err) {
+        equal(err.name, 'SyntaxError');
+    }
+
+    path.read({parser: 'JSON'})
+        .then(skip)
+        .failure(onFailure)
+        .then(done)
+});
+
+tests.push(function (done) {
+    // .read() method - ini.
+
+    var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.ini')
+
+    function testIni(rv) {
+        equal(rv.foo, 'bar', 'ini');
+    }
+
+    function onFailure(err) {
+        console.error(err.stack);
+        process.exit(1);
+    }
+
+    path.read({parser: 'ini'})
+        .then(testIni)
+        .failure(onFailure)
+        .then(done)
+});
+
+// Can't seem to create an ini syntax error.
+/*
+tests.push(function (done) {
+    // .read() method - ini w/error.
+
+    var path = FILEPATH.newPath(__dirname, 'fixtures', 'error.ini')
+
+    function skip(rv) {
+        assert(false, 'should not be called');
+        return done();
+    }
+
+    function onFailure(err) {
+        console.error(err.stack);
+    }
+
+    path.read({parser: 'ini'})
+        .then(skip)
+        .failure(onFailure)
+        .then(done)
+});
+*/
+
 
 // End of testing.
 tests.push(function () { console.log('PASSED'); });

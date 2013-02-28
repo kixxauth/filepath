@@ -19,22 +19,31 @@ exports.newPath = function newPath(path) {
     };
 
     self.exists = function exists() {
-        return PATH.exists(path);
+        return FS.existsSync(path) ? true : false;
     };
 
     self.read = function read(opts) {
         var d = IOU.newDefer()
         opts || (opts = {});
-        opts.encoding || (opts.encoding = 'utf8');
+        encoding = opts.encoding || 'utf8';
+        parser = opts.parser;
 
         FS.readFile(path, encoding, function (err, data) {
             if (err) return d.fail(err);
 
-            switch (opts.parser) {
+            switch (parser) {
             case 'ini':
-                return decodeINI(data);
+                try {
+                    return d.keep(decodeINI(data));
+                } catch (iniErr) {
+                    return d.fail(iniErr);
+                }
             case 'JSON':
-                return decodeJSON(data);
+                try {
+                    return d.keep(decodeJSON(data));
+                } catch (jsonErr) {
+                    return d.fail(jsonErr);
+                }
             default:
                 return d.keep(data);
             }
