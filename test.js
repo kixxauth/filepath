@@ -66,6 +66,7 @@ tests.push(function (done) {
         .then(onNotFound)
         .failure(onFailure)
         .then(done)
+        .failure(fail)
 });
 
 tests.push(function (done) {
@@ -91,6 +92,7 @@ tests.push(function (done) {
             process.exit(1);
         })
         .then(done)
+        .failure(fail)
 });
 
 tests.push(function (done) {
@@ -111,6 +113,7 @@ tests.push(function (done) {
         .then(testPlainText)
         .failure(onFailure)
         .then(done)
+        .failure(fail)
 });
 
 tests.push(function (done) {
@@ -131,6 +134,7 @@ tests.push(function (done) {
         .then(testJSON)
         .failure(onFailure)
         .then(done)
+        .failure(fail)
 });
 
 tests.push(function (done) {
@@ -150,6 +154,7 @@ tests.push(function (done) {
         .then(skip)
         .failure(onFailure)
         .then(done)
+        .failure(fail)
 });
 
 tests.push(function (done) {
@@ -170,6 +175,7 @@ tests.push(function (done) {
         .then(testIni)
         .failure(onFailure)
         .then(done)
+        .failure(fail)
 });
 
 // Can't seem to create an ini syntax error.
@@ -195,6 +201,17 @@ tests.push(function (done) {
 });
 */
 
+tests.push(function (done) {
+    // .home() method.
+
+    var p1 = FILEPATH.newPath(__filename)
+      , p2 = p1.home()
+
+    notEqual(p1, p2, "p1 isnt p2");
+    equal(p2.toString(), process.env.HOME, "home dir");
+    return done();
+});
+
 
 // End of testing.
 tests.push(function () { console.log('PASSED'); });
@@ -213,6 +230,16 @@ function assert(val, msg) {
 function equal(actual, expected, msg) {
     msg = actual +' !== '+ expected +'; '+ msg;
     return ASSERT.strictEqual(actual, expected, msg);
+}
+
+function notEqual(actual, expected, msg) {
+    msg = actual +' == '+ expected +'; '+ msg;
+    return ASSERT.notEqual(actual, expected, msg);
+}
+
+function fail(e) {
+    console.log(e.stack);
+    process.exit(1);
 }
 
 // Compose test functions using continuation passing.
