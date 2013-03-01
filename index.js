@@ -15,6 +15,7 @@ exports.newPath = function newPath(path) {
     }
 
     self.append = function append() {
+        // Join an arbitrary number of arguments.
         return newPath.apply(null, [path].concat(slice.call(arguments)));
     };
 
@@ -24,6 +25,8 @@ exports.newPath = function newPath(path) {
 
     self.read = function read(opts) {
         var d = IOU.newDefer()
+
+        // Break opts apart to make it immutable
         opts || (opts = {});
         encoding = opts.encoding || 'utf8';
         parser = opts.parser;
@@ -39,6 +42,7 @@ exports.newPath = function newPath(path) {
                 return d.fail(e);
             }
 
+            // If a parser is specified, use it to deserialize the text.
             switch (parser) {
             case 'ini':
                 try {
@@ -61,6 +65,8 @@ exports.newPath = function newPath(path) {
     };
 
     self.home = function home() {
+        // This module is not really Windows ready, but this is how it might be
+        // done.
         return newPath(process.platform === 'win32' ?
             process.env.USERPROFILE : process.env.HOME);
     };
