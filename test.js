@@ -285,6 +285,14 @@ tests.push(function (done) {
 	return done();
 });
 
+tests.push(function (done) {
+	// .root() module method.
+	
+  var path = FILEPATH.root();
+	equal(path.toString(), '/', 'file root');
+	return done();
+});
+
 
 // End of testing.
 tests.push(function () { console.log('PASSED'); });
