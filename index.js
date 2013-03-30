@@ -19,8 +19,8 @@ exports.newPath = function newPath(path) {
 		path = args[0] || '/';
 	}
 
-	self.absolute = function absolute() {
-		return exports.newPath(PATH.resolve(path));
+	self.resolve = function resolve(to) {
+		return exports.newPath(PATH.resolve(path, to));
 	};
 
 	self.append = function append() {
@@ -100,7 +100,7 @@ exports.newPath = function newPath(path) {
 	};
 
 	self.mkdir = function mkdir() {
-		var parts = self.absolute().toString().split(PATH.sep)
+		var parts = self.resolve().toString().split(PATH.sep)
 			, fullpath
 
 		// Shift off the empty string.

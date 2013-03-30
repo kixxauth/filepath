@@ -28,6 +28,19 @@ tests.push(function (done) {
 });
 
 tests.push(function (done) {
+	// .resolve() method.
+	
+	var path = FILEPATH.newPath(__dirname, 'node_modules');
+	path = path.resolve('../test.js');
+	equal(path.toString(), __filename, 'test.js');
+
+	path = FILEPATH.newPath('test.js');
+	path = path.resolve()
+	equal(path.toString(), __filename, 'fully resolved test.js');
+	return done();
+});
+
+tests.push(function (done) {
 	// .append() method.
 
 	var p1 = FILEPATH.newPath('foo');
