@@ -277,11 +277,9 @@ tests.push(function (done) {
 tests.push(function (done) {
 	// .home() method.
 
-	var p1 = FILEPATH.newPath(__filename)
-		, p2 = p1.home()
-
-	notEqual(p1, p2, "p1 isnt p2");
-	equal(p2.toString(), process.env.HOME, "home dir");
+  var path = FILEPATH.home();
+	equal(path.exists(), true, "home dir exists");
+	equal(path.toString(), process.env.HOME, "home dir");
 	return done();
 });
 
@@ -289,6 +287,7 @@ tests.push(function (done) {
 	// .root() module method.
 	
   var path = FILEPATH.root();
+	equal(path.exists(), true, "root dir exists");
 	equal(path.toString(), '/', 'file root');
 	return done();
 });

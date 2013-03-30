@@ -122,13 +122,6 @@ exports.newPath = function newPath(path) {
 		return exports.newPath(fullpath);
 	};
 
-	self.home = function home() {
-		// This module is not really Windows ready, but this is how it might be
-		// done.
-		return exports.newPath(process.platform === 'win32' ?
-			process.env.USERPROFILE : process.env.HOME);
-	};
-
 	self.toString = function toString() {
 		return path;
 	};
@@ -138,6 +131,13 @@ exports.newPath = function newPath(path) {
 
 exports.root = function root() {
 	return exports.newPath('/');
+};
+
+exports.home = function home() {
+	// This module is not really Windows ready, but this is how it might be
+	// done.
+	return exports.newPath(process.platform === 'win32' ?
+		process.env.USERPROFILE : process.env.HOME);
 };
 
 
