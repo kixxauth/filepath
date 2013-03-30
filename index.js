@@ -1,94 +1,99 @@
 var FS = require('fs')
-  , PATH = require('path')
+	, PATH = require('path')
 
-  , IOU = require('iou')
-  , INI = require('ini')
+	, IOU = require('iou')
+	, INI = require('ini')
 
-  , slice = Array.prototype.slice
+	, slice = Array.prototype.slice
 
 
 exports.newPath = function newPath(path) {
-  var self = Object.create(null)
-    , args = slice.call(arguments).map(function (item) {
-      return item +'';
-    })
+	var self = Object.create(null)
+		, args = slice.call(arguments).map(function (item) {
+			return item +'';
+		})
 
-  if (args.length > 1) {
-    path = PATH.join.apply(PATH, args);
-  } else {
-    path = args[0];
-  }
+	if (args.length > 1) {
+		path = PATH.join.apply(PATH, args);
+	} else {
+		path = args[0];
+	}
 
-  self.append = function append() {
-    // Join an arbitrary number of arguments.
-    return newPath.apply(null, [path].concat(slice.call(arguments)));
-  };
+	self.append = function append() {
+		// Join an arbitrary number of arguments.
+		return newPath.apply(null, [path].concat(slice.call(arguments)));
+	};
 
-  self.exists = function exists() {
-    return FS.existsSync(path) ? true : false;
-  };
+	self.exists = function exists() {
+		return FS.existsSync(path) ? true : false;
+	};
 
-  self.read = function read(opts) {
-    var d = IOU.newDefer()
+	self.isFile = function isFile() {
+		var stats = FS.statSync(path);
+		return !!stats.isFile();
+	};
 
-    // Break opts apart to make it immutable
-    opts || (opts = {});
-    encoding = opts.encoding || 'utf8';
-    parser = opts.parser;
+	self.read = function read(opts) {
+		var d = IOU.newDefer()
 
-    FS.readFile(path, encoding, function (err, data) {
-      var msg, e
+		// Break opts apart to make it immutable
+		opts || (opts = {});
+		encoding = opts.encoding || 'utf8';
+		parser = opts.parser;
 
-      if (err && err.code === 'ENOENT') {
-        return d.keep(null);
-      } else if (err && err.code === 'EISDIR') {
-        e = new Error("Cannot read '"+ path +"'; it is a directory.");
-        e.code = "path is directory";
-        return d.fail(e);
-      }
+		FS.readFile(path, encoding, function (err, data) {
+			var msg, e
 
-      // If a parser is specified, use it to deserialize the text.
-      switch (parser) {
-      case 'ini':
-        try {
-          return d.keep(decodeINI(data));
-        } catch (iniErr) {
-          return d.fail(iniErr);
-        }
-      case 'JSON':
-        try {
-          return d.keep(decodeJSON(data));
-        } catch (jsonErr) {
-          return d.fail(jsonErr);
-        }
-      default:
-        return d.keep(data);
-      }
-    });
+			if (err && err.code === 'ENOENT') {
+				return d.keep(null);
+			} else if (err && err.code === 'EISDIR') {
+				e = new Error("Cannot read '"+ path +"'; it is a directory.");
+				e.code = "path is directory";
+				return d.fail(e);
+			}
 
-    return d.promise;
-  };
+			// If a parser is specified, use it to deserialize the text.
+			switch (parser) {
+			case 'ini':
+				try {
+					return d.keep(decodeINI(data));
+				} catch (iniErr) {
+					return d.fail(iniErr);
+				}
+			case 'JSON':
+				try {
+					return d.keep(decodeJSON(data));
+				} catch (jsonErr) {
+					return d.fail(jsonErr);
+				}
+			default:
+				return d.keep(data);
+			}
+		});
 
-  self.home = function home() {
-    // This module is not really Windows ready, but this is how it might be
-    // done.
-    return newPath(process.platform === 'win32' ?
-      process.env.USERPROFILE : process.env.HOME);
-  };
+		return d.promise;
+	};
 
-  self.toString = function toString() {
-    return path;
-  };
+	self.home = function home() {
+		// This module is not really Windows ready, but this is how it might be
+		// done.
+		return newPath(process.platform === 'win32' ?
+			process.env.USERPROFILE : process.env.HOME);
+	};
 
-  return self;
+	self.toString = function toString() {
+		return path;
+	};
+
+	return self;
 };
 
 
 function decodeINI(str) {
-  return INI.decode(str);
+	return INI.decode(str);
 }
 
 
 function decodeJSON(str) {
-  return JSON.parse(str);
+	return JSON.parse(str);
 }
