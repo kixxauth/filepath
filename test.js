@@ -61,9 +61,11 @@ tests.push(function (done) {
 	// .isFile() & .isDirectory() methods.
 	var path = FILEPATH.newPath(__filename);
 	equal(path.isFile(), true, 'isFile() === true');
+	equal(path.isDirectory(), false, 'isDirectory() === false');
 
 	path = FILEPATH.newPath(__dirname);
 	equal(path.isFile(), false, 'isFile() === false');
+	equal(path.isDirectory(), true, 'isDirectory() === true');
 
 	return done();
 });

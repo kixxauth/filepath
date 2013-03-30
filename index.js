@@ -33,6 +33,11 @@ exports.newPath = function newPath(path) {
 		return !!stats.isFile();
 	};
 
+	self.isDirectory = function isDirectory() {
+		var stats = FS.statSync(path);
+		return !!stats.isDirectory();
+	};
+
 	self.read = function read(opts) {
 		var d = IOU.newDefer()
 
