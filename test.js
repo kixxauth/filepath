@@ -1,4 +1,5 @@
 var ASSERT = require('assert')
+	, FS = require('fs')
 	, FILEPATH = require('./index')
 
 var tests = [];
@@ -102,7 +103,7 @@ tests.push(function (done) {
 	}
 
 	function onFailure(err) {
-		equal(err.code, "path is directory", 'Error code');
+		equal(err.code, "PATH_IS_DIRECTORY", 'Error code');
 		equal(err.message, "Cannot read '"+ __dirname +"'; it is a directory.", 'Error message');
 	}
 
@@ -238,8 +239,36 @@ tests.push(function (done) {
 	try {
 		path.list();
 	} catch (err) {
-		equal(err.code, "path is file", 'Error code');
+		equal(err.code, "PATH_IS_FILE", 'Error code');
 		equal(err.message, "Cannot list '"+ __filename +"'; it is a file.", 'Error message');
+	}
+
+	return done();
+});
+
+tests.push(function (done) {
+	// .mkdir() method
+	
+  var path = FILEPATH.newPath('/tmp/filepath/testing/foo');
+	equal(path.exists(), false, 'exists() === false');
+
+	path.mkdir();
+	equal(path.exists(), true, 'exists() === true');
+	equal(path.isDirectory(), true, 'isDirectory() === true');
+
+	// Do the cleanup.
+	FS.rmdirSync('/tmp/filepath/testing/foo');
+	FS.rmdirSync('/tmp/filepath/testing');
+	FS.rmdirSync('/tmp/filepath');
+
+	// Should throw if a filepath is given
+	path = FILEPATH.newPath(__filename, 'foo');
+
+	try {
+		path.mkdir();
+	} catch (e) {
+		equal(e.code, 'PATH_IS_FILE', 'e.code');
+		equal(e.message, "Cannot create directory '"+ path +"'; it is a file.", 'e.message');
 	}
 
 	return done();

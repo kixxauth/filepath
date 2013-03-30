@@ -16,8 +16,18 @@ exports.newPath = function newPath(path) {
 	if (args.length > 1) {
 		path = PATH.join.apply(PATH, args);
 	} else {
-		path = args[0];
+		path = args[0] || '/';
 	}
+
+	self.split = function split() {
+		var parts = path.split(PATH.sep);
+		if (parts[0] === '') return parts.slice(1);
+		return parts;
+	};
+
+	self.absolute = function absolute() {
+		return exports.newPath(PATH.resolve(path));
+	};
 
 	self.append = function append() {
 		// Join an arbitrary number of arguments.
@@ -53,7 +63,7 @@ exports.newPath = function newPath(path) {
 				return d.keep(null);
 			} else if (err && err.code === 'EISDIR') {
 				e = new Error("Cannot read '"+ path +"'; it is a directory.");
-				e.code = "path is directory";
+				e.code = "PATH_IS_DIRECTORY";
 				return d.fail(e);
 			}
 
@@ -85,7 +95,7 @@ exports.newPath = function newPath(path) {
 		} catch (err) {
 			if (err.code) {
 				var e = new Error("Cannot list '"+ path +"'; it is a file.");
-				e.code = "path is file";
+				e.code = "PATH_IS_FILE";
 				throw e;
 			}
 		}
@@ -93,6 +103,26 @@ exports.newPath = function newPath(path) {
 		return list.map(function (item) {
 			return exports.newPath(path, item);
 		});
+	};
+
+	self.mkdir = function mkdir() {
+		var parts = self.absolute().split()
+			, fullpath
+
+		fullpath = parts.reduce(function (fullpath, part) {
+			fullpath = fullpath.append(part);
+			if (fullpath.exists()) {
+				if (fullpath.isDirectory()) return fullpath;
+				var e = new Error("Cannot create directory '"+ path +"'; it is a file.");
+				e.code = "PATH_IS_FILE";
+				throw e;
+			}
+
+			FS.mkdirSync(fullpath.toString());
+			return fullpath;
+		}, exports.root());
+
+		return exports.newPath(fullpath);
 	};
 
 	self.home = function home() {
@@ -107,6 +137,10 @@ exports.newPath = function newPath(path) {
 	};
 
 	return self;
+};
+
+exports.root = function root() {
+	return exports.newPath('/');
 };
 
 
