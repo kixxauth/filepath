@@ -81,9 +81,17 @@ tests.push(function (done) {
 	equal(path.isFile(), true, 'isFile() === true');
 	equal(path.isDirectory(), false, 'isDirectory() === false');
 
+	// If path does not exist.
+	path = FILEPATH.newPath('foo');
+	equal(path.isFile(), false, 'when file does not exist');
+
 	path = FILEPATH.newPath(__dirname);
 	equal(path.isFile(), false, 'isFile() === false');
 	equal(path.isDirectory(), true, 'isDirectory() === true');
+
+	// If path does not exist.
+	path = FILEPATH.newPath('foo');
+	equal(path.isDirectory(), false, 'when directory does not exist');
 
 	return done();
 });
@@ -249,7 +257,7 @@ tests.push(function (done) {
 
 	child = ls[0];
 	equal(typeof child.exists, 'function', 'child.exists()');
-	equal(child.toString(), __dirname +'/fixtures/test.ini');
+	equal(child.toString(), __dirname +'/fixtures/foo');
 
 	// When not a directory.
 	path = FILEPATH.newPath(__filename)
@@ -306,6 +314,38 @@ tests.push(function (done) {
   var path = FILEPATH.root();
 	equal(path.exists(), true, "root dir exists");
 	equal(path.toString(), '/', 'file root');
+	return done();
+});
+
+tests.push(function (done) {
+	// .recurse() method
+
+	var path = FILEPATH.newPath('fixtures')
+		, resolved = path.resolve()
+		, count = 0
+		, results = [
+				  resolved.append('foo').toString()
+				, resolved.append('foo', '.gitkeep').toString()
+				, resolved.append('test.ini').toString()
+				, resolved.append('test.json').toString()
+			]
+
+	path.recurse(function (node) {
+		equal(node.toString(), results[count], 'last path');
+		count += 1;
+	});
+
+
+	// recurse from a file just returns the file.
+	path = FILEPATH.newPath(__filename);
+
+	path.recurse(function (item) {
+		equal(item.toString(), __filename, 'from a file');
+		count += 1;
+	});
+
+	equal(count, 5, 'file count');
+
 	return done();
 });
 

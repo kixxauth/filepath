@@ -33,12 +33,26 @@ exports.newPath = function newPath(path) {
 	};
 
 	self.isFile = function isFile() {
-		var stats = FS.statSync(path);
+		try {
+			var stats = FS.statSync(path);
+		} catch (err) {
+			if (err.code === 'ENOENT') {
+				return false;
+			}
+			throw err;
+		}
 		return !!stats.isFile();
 	};
 
 	self.isDirectory = function isDirectory() {
-		var stats = FS.statSync(path);
+		try {
+			var stats = FS.statSync(path);
+		} catch (err) {
+			if (err.code === 'ENOENT') {
+				return false;
+			}
+			throw err;
+		}
 		return !!stats.isDirectory();
 	};
 
@@ -121,6 +135,41 @@ exports.newPath = function newPath(path) {
 
 		return exports.newPath(fullpath);
 	};
+
+	self.recurse = function recurse(callback) {
+		var path = self.resolve();
+
+		if (!path.isDirectory()) {
+			return callback(path);
+		}
+
+		try {
+			var listing = path.list();
+		} catch (err) {
+			if (err.code === 'PATH_IS_FILE') {
+				return path;
+			}
+
+			throw err;
+		}
+
+		listing.sort(_alphaSort).forEach(function (li) {
+			callback(li);
+			if (li.isDirectory()) {
+				li.recurse(callback);
+			}
+		});
+
+		return self;
+	};
+
+	function _alphaSort(a, b) {
+		a = a.toString();
+		b = b.toString();
+		if (a < b) return -1;
+		if (a > b) return 1;
+		return 0;
+	}
 
 	self.toString = function toString() {
 		return path;
