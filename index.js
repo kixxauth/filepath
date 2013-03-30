@@ -16,7 +16,7 @@ exports.newPath = function newPath(path) {
 	if (args.length > 1) {
 		path = PATH.join.apply(PATH, args);
 	} else {
-		path = args[0] || '/';
+		path = args[0] || process.cwd();
 	}
 
 	self.resolve = function resolve(to) {

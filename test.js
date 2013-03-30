@@ -24,6 +24,10 @@ tests.push(function (done) {
 	path = FILEPATH.newPath(FILEPATH.newPath('foo'), 'bar', FILEPATH.newPath('baz'));
 	equal(path.toString(), 'foo/bar/baz', 'path objects .newPath(foo, bar, baz)');
 
+	// Defaults to CWD
+	path = FILEPATH.newPath();
+	equal(path.toString(), process.cwd(), 'defult to cwd');
+
 	return done();
 });
 
