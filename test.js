@@ -224,6 +224,28 @@ tests.push(function (done) {
 */
 
 tests.push(function (done) {
+	// .list() method.
+	
+	var path = FILEPATH.newPath(__dirname, 'fixtures')
+	var ls = path.list();
+
+	child = ls[0];
+	equal(typeof child.exists, 'function', 'child.exists()');
+	equal(child.toString(), __dirname +'/fixtures/test.ini');
+
+	// When not a directory.
+	path = FILEPATH.newPath(__filename)
+	try {
+		path.list();
+	} catch (err) {
+		equal(err.code, "path is file", 'Error code');
+		equal(err.message, "Cannot list '"+ __filename +"'; it is a file.", 'Error message');
+	}
+
+	return done();
+});
+
+tests.push(function (done) {
 	// .home() method.
 
 	var p1 = FILEPATH.newPath(__filename)

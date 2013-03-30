@@ -79,6 +79,22 @@ exports.newPath = function newPath(path) {
 		return d.promise;
 	};
 
+	self.list = function list() {
+		try {
+			var list = FS.readdirSync(path);
+		} catch (err) {
+			if (err.code) {
+				var e = new Error("Cannot list '"+ path +"'; it is a file.");
+				e.code = "path is file";
+				throw e;
+			}
+		}
+
+		return list.map(function (item) {
+			return exports.newPath(path, item);
+		});
+	};
+
 	self.home = function home() {
 		// This module is not really Windows ready, but this is how it might be
 		// done.
