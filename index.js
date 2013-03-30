@@ -19,19 +19,13 @@ exports.newPath = function newPath(path) {
 		path = args[0] || '/';
 	}
 
-	self.split = function split() {
-		var parts = path.split(PATH.sep);
-		if (parts[0] === '') return parts.slice(1);
-		return parts;
-	};
-
 	self.absolute = function absolute() {
 		return exports.newPath(PATH.resolve(path));
 	};
 
 	self.append = function append() {
 		// Join an arbitrary number of arguments.
-		return newPath.apply(null, [path].concat(slice.call(arguments)));
+		return exports.newPath.apply(null, [path].concat(slice.call(arguments)));
 	};
 
 	self.exists = function exists() {
@@ -106,8 +100,11 @@ exports.newPath = function newPath(path) {
 	};
 
 	self.mkdir = function mkdir() {
-		var parts = self.absolute().split()
+		var parts = self.absolute().toString().split(PATH.sep)
 			, fullpath
+
+		// Shift off the empty string.
+		parts.shift();
 
 		fullpath = parts.reduce(function (fullpath, part) {
 			fullpath = fullpath.append(part);
@@ -128,7 +125,7 @@ exports.newPath = function newPath(path) {
 	self.home = function home() {
 		// This module is not really Windows ready, but this is how it might be
 		// done.
-		return newPath(process.platform === 'win32' ?
+		return exports.newPath(process.platform === 'win32' ?
 			process.env.USERPROFILE : process.env.HOME);
 	};
 
