@@ -10,13 +10,16 @@ var FS = require('fs')
 exports.newPath = function newPath(path) {
 	var self = Object.create(null)
 		, args = slice.call(arguments).map(function (item) {
+			if (item == void 0) return '';
 			return item +'';
 		})
 
-	if (args.length > 1) {
+	if (args.length === 0 || args[args.length -1] === '') {
+		path = process.cwd();
+	} else if (args.length > 1) {
 		path = PATH.join.apply(PATH, args);
 	} else {
-		path = args[0] || process.cwd();
+		path = args[0];
 	}
 
 	self.resolve = function resolve(to) {

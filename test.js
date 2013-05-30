@@ -26,7 +26,11 @@ tests.push(function (done) {
 
 	// Defaults to CWD
 	path = FILEPATH.newPath();
-	equal(path.toString(), process.cwd(), 'defult to cwd');
+	equal(path.toString(), process.cwd(), 'default to cwd');
+
+	// Multiple void arguments
+	path = FILEPATH.newPath(null, undefined);
+	equal(path.toString(), process.cwd(), 'undefined to cwd');
 
 	return done();
 });
