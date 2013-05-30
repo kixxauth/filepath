@@ -20,7 +20,13 @@ exports.newPath = function newPath(path) {
 	}
 
 	self.resolve = function resolve(to) {
-		return exports.newPath(PATH.resolve(path, to));
+		var p
+		if (typeof to === 'string') {
+			p = PATH.resolve(path, to);
+		} else {
+			p = PATH.resolve(path);
+		}
+		return exports.newPath(p);
 	};
 
 	self.append = function append() {
