@@ -272,6 +272,14 @@ tests.push(function (done) {
 		equal(err.message, "Cannot list '"+ __filename +"'; it is a file.", 'Error message');
 	}
 
+	path = FILEPATH.newPath('foo', 'bar');
+	try {
+		path.list();
+	} catch (err) {
+		equal(err.code, "PATH_NO_EXIST", 'Error code');
+		equal(err.message, "Cannot list 'foo/bar'; it does not exist.", 'Error message');
+	}
+
 	return done();
 });
 

@@ -110,11 +110,17 @@ exports.newPath = function newPath(path) {
 		try {
 			var list = FS.readdirSync(path);
 		} catch (err) {
-			if (err.code) {
-				var e = new Error("Cannot list '"+ path +"'; it is a file.");
+			var e;
+			if (err.code === 'ENOTDIR') {
+				e = new Error("Cannot list '"+ path +"'; it is a file.");
 				e.code = "PATH_IS_FILE";
-				throw e;
+			} else if (err.code === 'ENOENT') {
+				e = new Error("Cannot list '"+ path +"'; it does not exist.");
+				e.code = "PATH_NO_EXIST";
 			}
+
+			if (e) throw e;
+			throw err;
 		}
 
 		return list.map(function (item) {
