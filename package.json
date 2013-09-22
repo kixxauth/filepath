@@ -7,7 +7,10 @@
     "repository": {"type":"git", "url":"https://github.com/kixxauth/filepath.git"},
     "bugs": "https://github.com/kixxauth/filepath/issues",
     "dependencies": {
-        "iou": "0.1.0",
+        "iou": "0.3.0",
         "ini": "1.1.0"
+    },
+    "devDependencies": {
+        "nodeunit": "0.8.1"
     }
 }

@@ -1,7 +1,7 @@
 Filepath
 ========
 
-A nice little interface for working with the filesystem in Node.js.
+A little interface for working with the filesystem in Node.js programs.
 
 ## Installation
 The most common use of Filepath is to use it as a library. In that case, just
@@ -18,12 +18,9 @@ which will install filepath in your `node_modules/` folder.
 ## Testing
 To run the tests, just do
 
-	node test.js
+  ./manage test
 
-You should see 'PASSED' as the only output. Any failed tests will output an
-error message and halt execution. If you don't see anything, that means the
-tests did not complete for some reason. You'll have to set breakpoints to
-figure out where.
+You should see the test results output.
 
 Copyright and License
 ---------------------
