@@ -3,7 +3,7 @@ var FS = require('fs')
   , FILEPATH = require('../index')
 
 
-exports["Create a new FilePath object"] = {
+  exports["Create a new FilePath object"] = {
 
   "with a single path part": function (test) {
     var path = FILEPATH.newPath('foo');
@@ -318,6 +318,7 @@ exports["#read() method"] = {
     function skip(rv) {
       console.log(rv);
       test.ok(false, 'should not be called');
+      return;
     }
 
     test.expect(2);
@@ -332,7 +333,7 @@ exports["#read() method"] = {
       .then(test.done, test.done)
   },
 
-  "reads plain text files": function (test) {
+  "reads plain text files by default": function (test) {
     var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.ini')
 
     test.expect(1);
@@ -346,47 +347,51 @@ exports["#read() method"] = {
       .then(test.done, test.done)
   },
 
-  "reads and parses JSON files": function (test) {
-    var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.json')
+  "calls optional deserialization function": function (test) {
+    var path, serializers
+
+    serializers = {
+      'json': {
+        deserialize: function (text, callback) {
+          return callback(null, JSON.parse(text));
+        }
+      }
+    };
+
+    FILEPATH.setOptions({serializers: serializers});
+    path = FILEPATH.newPath(__dirname, 'fixtures', 'test.json');
 
     test.expect(1);
-    function testJSON(rv) {
-      test.equal(rv.foo, 'bar', 'JSON');
+    function testParser(rv) {
+      test.equal(rv.foo, 'bar');
       return;
     }
 
-    path.read({parser: 'JSON'})
-      .then(testJSON, test.done)
+    path.read('json')
+      .then(testParser, test.done)
       .then(test.done, test.done)
   },
 
-  "handles parse error in JSON files": function (test) {
-    var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.ini')
+  "fails when a parser is specified but the deserializer is not defined": function (test) {
+    var path, serializers
+
+    FILEPATH.setOptions({serializers: {}});
+    path = FILEPATH.newPath(__dirname, 'fixtures', 'test.json');
     test.expect(1);
 
     function skip(rv) {
-      test.ok(false, 'should not be called');
+      console.log(rv);
+      test.ok(false, 'skip should not be called');
+      return;
     }
 
-    function onFailure(err) {
-      test.equal(err.name, 'SyntaxError');
+    function testFailure(err) {
+      test.equal(err.code, 'INVALID_DESERIALIZER', 'Error.code');
+      return;
     }
 
-    path.read({parser: 'JSON'})
-      .then(skip, onFailure)
-      .then(test.done, test.done)
-  },
-
-  "reads and parses ini files": function (test) {
-    var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.ini')
-
-    test.expect(1);
-    function testIni(rv) {
-      test.equal(rv.foo, 'bar', 'ini');
-    }
-
-    path.read({parser: 'ini'})
-      .then(testIni, test.done)
+    path.read('json')
+      .then(skip, testFailure)
       .then(test.done, test.done)
   }
 };

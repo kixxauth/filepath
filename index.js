@@ -6,6 +6,13 @@ var FS = require('fs')
 
 	, slice = Array.prototype.slice
 
+	, options = Object.create(null)
+
+
+exports.setOptions = function setOptions(opts) {
+	options.serializers = opts.serializers || Object.create(null);
+	return;
+};
 
 exports.newPath = function newPath(path) {
 	var self = Object.create(null)
@@ -79,16 +86,11 @@ exports.newPath = function newPath(path) {
 		return !!stats.isDirectory();
 	};
 
-	self.read = function read(opts) {
+	self.read = function read(parser) {
 		var d = IOU.newDefer()
 
-		// Break opts apart to make it immutable
-		opts || (opts = {});
-		encoding = opts.encoding || 'utf8';
-		parser = opts.parser;
-
-		FS.readFile(path, encoding, function (err, data) {
-			var msg, e
+		FS.readFile(path, 'utf8', function (err, data) {
+			var deserializer, msg, e
 
 			if (err && err.code === 'ENOENT') {
 				return d.keep(null);
@@ -99,20 +101,20 @@ exports.newPath = function newPath(path) {
 			}
 
 			// If a parser is specified, use it to deserialize the text.
-			switch (parser) {
-			case 'ini':
-				try {
-					return d.keep(decodeINI(data));
-				} catch (iniErr) {
-					return d.fail(iniErr);
+			if (parser) {
+				if (deserializer = getDeserializer(parser)) {
+					deserializer(data, function (err, data) {
+						if (err) {
+							return d.fail(err);
+						}
+						return d.keep(data);
+					});
+				} else {
+					e = new Error('The "'+ parser +'" deserializer is not defined.');
+					e.code = "INVALID_DESERIALIZER";
+					return d.fail(e);
 				}
-			case 'JSON':
-				try {
-					return d.keep(decodeJSON(data));
-				} catch (jsonErr) {
-					return d.fail(jsonErr);
-				}
-			default:
+			} else {
 				return d.keep(data);
 			}
 		});
@@ -203,6 +205,14 @@ exports.newPath = function newPath(path) {
 	self.toString = function toString() {
 		return path;
 	};
+
+	function getDeserializer(name) {
+		var deserializer = (options.serializers[name] || {}).deserialize
+		if (typeof deserializer === 'function') {
+			return deserializer;
+		}
+		return null;
+	}
 
 	return self;
 };
