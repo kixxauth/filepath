@@ -45,6 +45,28 @@ exports["Create a new FilePath object"] = {
   }
 };
 
+exports["#basename() method"] = {
+  "creates a new FilePath object": function (test) {
+    var path = FILEPATH.newPath(__filename)
+      , path2 = path.basename()
+
+    test.notEqual(path, path2);
+    return test.done();
+  },
+
+  "returns the basename of the path": function (test) {
+    var path = FILEPATH.newPath(__filename).basename()
+    test.equal(path.toString(), 'test.js');
+    return test.done();
+  },
+
+  "can slice off the extension": function (test) {
+    var path = FILEPATH.newPath(__filename).basename('.js')
+    test.equal(path.toString(), 'test');
+    return test.done();
+  }
+};
+
 exports["#resolve() method"] = {
   "creates a new FilePath object": function (test) {
     var path = FILEPATH.newPath()

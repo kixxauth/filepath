@@ -37,6 +37,11 @@ exports.newPath = function newPath(path) {
 		return exports.newPath.apply(null, [path].concat(slice.call(arguments)));
 	};
 
+	self.basename = function basename(ext) {
+		var p = PATH.basename(path, ext);
+		return exports.newPath(p);
+	}
+
 	self.exists = function exists() {
 		return FS.existsSync(path) ? true : false;
 	};
