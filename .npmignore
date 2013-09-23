@@ -1,1 +1,3 @@
-/fixtures/***
+bin/**
+manage.sh
+test/**
