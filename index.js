@@ -2,7 +2,6 @@ var FS = require('fs')
 	, PATH = require('path')
 
 	, IOU = require('iou')
-	, INI = require('ini')
 
 	, slice = Array.prototype.slice
 
