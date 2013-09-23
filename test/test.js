@@ -67,6 +67,22 @@ exports["#basename() method"] = {
   }
 };
 
+exports["#dirname() method"] = {
+  "creates a new FilePath object": function (test) {
+    var path = FILEPATH.newPath(__filename)
+      , path2 = path.dirname()
+
+    test.notEqual(path, path2);
+    return test.done();
+  },
+
+  "returns the directory name of the path": function (test) {
+    var path = FILEPATH.newPath(__filename).dirname()
+    test.equal(path.toString(), __dirname);
+    return test.done();
+  }
+};
+
 exports["#resolve() method"] = {
   "creates a new FilePath object": function (test) {
     var path = FILEPATH.newPath()

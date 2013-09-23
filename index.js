@@ -40,7 +40,12 @@ exports.newPath = function newPath(path) {
 	self.basename = function basename(ext) {
 		var p = PATH.basename(path, ext);
 		return exports.newPath(p);
-	}
+	};
+
+	self.dirname = function dirname() {
+		var p = PATH.dirname(path);
+		return exports.newPath(p);
+	};
 
 	self.exists = function exists() {
 		return FS.existsSync(path) ? true : false;
