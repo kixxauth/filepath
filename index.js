@@ -49,6 +49,10 @@ exports.newPath = function newPath(path) {
 		return exports.newPath.apply(null, [path].concat(slice.call(arguments)));
 	};
 
+	self.slice = function slice() {
+		return path.split(PATH.sep).filter(partsFilter);
+	};
+
 	self.basename = function basename(ext) {
 		var p = PATH.basename(path, ext);
 		return exports.newPath(p);
@@ -288,6 +292,10 @@ exports.newPath = function newPath(path) {
 			return serializer;
 		}
 		return null;
+	}
+
+	function partsFilter(part) {
+		return part ? true : false;
 	}
 
 	return self;

@@ -3,30 +3,30 @@ var FS = require('fs')
   , FILEPATH = require('../index')
 
 
-  exports["MODULE.setOptions"] = {
-    "cannot be called more than once": function (test) {
-      var serializers = {
-        'json': {
-          deserialize: function (text, callback) {
-            return callback(null, JSON.parse(text));
-          },
+exports["MODULE.setOptions"] = {
+  "cannot be called more than once": function (test) {
+    var serializers = {
+      'json': {
+        deserialize: function (text, callback) {
+          return callback(null, JSON.parse(text));
+        },
 
-          serialize: function (object, callback) {
-            return callback(null, JSON.stringify(object));
-          }
+        serialize: function (object, callback) {
+          return callback(null, JSON.stringify(object));
         }
-      };
+      }
+    };
 
-      FILEPATH.setOptions({serializers: serializers});
+    FILEPATH.setOptions({serializers: serializers});
 
-      test.throws(function () {
-        FILEPATH.setOptions()
-      }, "FilePath .setOptions() should only be called once.");
-      return test.done();
-    }
-  };
+    test.throws(function () {
+      FILEPATH.setOptions()
+    }, "FilePath .setOptions() should only be called once.");
+    return test.done();
+  }
+};
 
-  exports["Create a new FilePath object"] = {
+exports["Create a new FilePath object"] = {
 
   "with a single path part": function (test) {
     var path = FILEPATH.newPath('foo');
@@ -67,6 +67,28 @@ var FS = require('fs')
     return test.done();
   }
 };
+
+exports["#slice() method"] = {
+  "slices a FilePath into an Array of strings": function (test) {
+    var path = FILEPATH.newPath('/foo/bar/baz/test.json')
+      , parts = path.slice()
+
+    test.ok(Array.isArray(parts), 'Array.isArray()');
+    test.equal(parts.pop(), 'test.json', '.pop()');
+    return test.done();
+  },
+
+  "filters out empty path parts": function (test) {
+    var path = FILEPATH.newPath('/foo//bar/baz/')
+      , parts = path.slice()
+
+    console.log(parts)
+    test.equal(parts.length, 3, 'length');
+    test.equal(parts.shift(), 'foo', '.shift()');
+    test.equal(parts.pop(), 'baz', '.pop()');
+    return test.done();
+  }
+}
 
 exports["#basename() method"] = {
   "creates a new FilePath object": function (test) {
