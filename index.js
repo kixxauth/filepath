@@ -42,6 +42,10 @@ exports.newPath = function newPath(path) {
 		return exports.newPath(p);
 	};
 
+	self.extname = function extname() {
+		return PATH.extname(path);
+	};
+
 	self.dirname = function dirname() {
 		var p = PATH.dirname(path);
 		return exports.newPath(p);

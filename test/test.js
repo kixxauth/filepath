@@ -67,6 +67,14 @@ exports["#basename() method"] = {
   }
 };
 
+exports["#extname() method"] = {
+  "returns the file extension as a String": function (test) {
+    var path = FILEPATH.newPath(__filename)
+    test.equal(path.extname(), '.js');
+    return test.done();
+  }
+};
+
 exports["#dirname() method"] = {
   "creates a new FilePath object": function (test) {
     var path = FILEPATH.newPath(__filename)
