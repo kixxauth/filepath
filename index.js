@@ -92,10 +92,12 @@ exports.newPath = function newPath(path) {
 		return !!stats.isDirectory();
 	};
 
-	self.read = function read(parser) {
+	self.read = function read(opts) {
+		opts = (opts || Object.create(null));
 		var d = IOU.newDefer()
+		  , parser = opts.parser
 
-		FS.readFile(path, 'utf8', function (err, data) {
+		FS.readFile(path, opts, function (err, data) {
 			var deserializer, msg, e
 
 			if (err && err.code === 'ENOENT') {
@@ -104,17 +106,23 @@ exports.newPath = function newPath(path) {
 				e = new Error("Cannot read '"+ path +"'; it is a directory.");
 				e.code = "PATH_IS_DIRECTORY";
 				return d.fail(e);
+			} else if (err) {
+				return d.fail(err);
 			}
 
 			// If a parser is specified, use it to deserialize the text.
 			if (parser) {
 				if (deserializer = getDeserializer(parser)) {
-					deserializer(data, function (err, data) {
-						if (err) {
-							return d.fail(err);
-						}
-						return d.keep(data);
-					});
+					try {
+						deserializer(data, function (err, data) {
+							if (err) {
+								return d.fail(err);
+							}
+							return d.keep(data);
+						});
+					} catch (e) {
+						return d.fail(e);
+					}
 				} else {
 					e = new Error('The "'+ parser +'" deserializer is not defined.');
 					e.code = "INVALID_DESERIALIZER";
@@ -124,6 +132,61 @@ exports.newPath = function newPath(path) {
 				return d.keep(data);
 			}
 		});
+
+		return d.promise;
+	};
+
+	self.write = function write(data, opts) {
+		opts = (opts || Object.create(null));
+		var d = IOU.newDefer()
+		  , parser = opts.parser
+		  , serializer
+		  , dir = self.dirname()
+
+		if (!dir.exists()) {
+			dir.mkdir();
+		}
+
+		if (parser) {
+			if (serializer = getSerializer(parser)) {
+				try {
+					serializer(data, function (err, data) {
+						if (err) {
+							d.fail(err);
+						} else {
+							write(data);
+						}
+						return;
+					});
+				} catch (e) {
+					d.fail(e);
+				}
+			} else {
+				e = new Error('The "'+ parser +'" serializer is not defined.');
+				e.code = "INVALID_SERIALIZER";
+				d.fail(e);
+			}
+		} else {
+			write(data);
+		}
+
+		function write(data) {
+			FS.writeFile(path, data, opts, function (err) {
+				var deserializer, msg, e
+
+				if (err && err.code === 'ENOENT') {
+					return d.keep(null);
+				} else if (err && err.code === 'EISDIR') {
+					e = new Error("Cannot write to '"+ path +"'; it is a directory.");
+					e.code = "PATH_IS_DIRECTORY";
+					return d.fail(e);
+				} else if (err) {
+					return d.fail(err);
+				}
+
+				return d.keep();
+			});
+		}
 
 		return d.promise;
 	};
@@ -216,6 +279,14 @@ exports.newPath = function newPath(path) {
 		var deserializer = (options.serializers[name] || {}).deserialize
 		if (typeof deserializer === 'function') {
 			return deserializer;
+		}
+		return null;
+	}
+
+	function getSerializer(name) {
+		var serializer = (options.serializers[name] || {}).serialize
+		if (typeof serializer === 'function') {
+			return serializer;
 		}
 		return null;
 	}
