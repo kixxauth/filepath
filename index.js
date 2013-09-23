@@ -6,11 +6,17 @@ var FS = require('fs')
 
 	, slice = Array.prototype.slice
 
-	, options = Object.create(null)
+	, options = null
 
 
 exports.setOptions = function setOptions(opts) {
+	if (options) {
+		throw new Error("FilePath .setOptions() should only be called once.");
+	}
+	opts = (opts || Object.create(null));
+	options = Object.create(null)
 	options.serializers = opts.serializers || Object.create(null);
+	Object.freeze(options);
 	return;
 };
 

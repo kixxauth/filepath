@@ -3,6 +3,25 @@ var FS = require('fs')
   , FILEPATH = require('../index')
 
 
+  exports["MODULE.setOptions"] = {
+    "cannot be called more than once": function (test) {
+      var serializers = {
+        'json': {
+          deserialize: function (text, callback) {
+            return callback(null, JSON.parse(text));
+          }
+        }
+      };
+
+      FILEPATH.setOptions({serializers: serializers});
+
+      test.throws(function () {
+        FILEPATH.setOptions()
+      }, "FilePath .setOptions() should only be called once.");
+      return test.done();
+    }
+  };
+
   exports["Create a new FilePath object"] = {
 
   "with a single path part": function (test) {
@@ -348,18 +367,7 @@ exports["#read() method"] = {
   },
 
   "calls optional deserialization function": function (test) {
-    var path, serializers
-
-    serializers = {
-      'json': {
-        deserialize: function (text, callback) {
-          return callback(null, JSON.parse(text));
-        }
-      }
-    };
-
-    FILEPATH.setOptions({serializers: serializers});
-    path = FILEPATH.newPath(__dirname, 'fixtures', 'test.json');
+    var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.json');
 
     test.expect(1);
     function testParser(rv) {
@@ -373,10 +381,7 @@ exports["#read() method"] = {
   },
 
   "fails when a parser is specified but the deserializer is not defined": function (test) {
-    var path, serializers
-
-    FILEPATH.setOptions({serializers: {}});
-    path = FILEPATH.newPath(__dirname, 'fixtures', 'test.json');
+    var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.json');
     test.expect(1);
 
     function skip(rv) {
@@ -390,7 +395,7 @@ exports["#read() method"] = {
       return;
     }
 
-    path.read('json')
+    path.read('yaml')
       .then(skip, testFailure)
       .then(test.done, test.done)
   }
