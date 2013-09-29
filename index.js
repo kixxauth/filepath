@@ -342,19 +342,10 @@ exports.setOptions = function setOptions(opts) {
 };
 
 
-exports.newPath = function newPath() {
-	return FilePath.create.apply(null, arguments);
-};
+exports.newPath = FilePath.create;
+exports.root = FilePath.root;
+exports.home = FilePath.home;
 
-
-exports.root = function root() {
-	return FilePath.root();
-};
-
-
-exports.home = function home() {
-	return FilePath.home();
-};
 
 function _getDeserializer(name) {
 	var deserializer = (options.serializers[name] || {}).deserialize
