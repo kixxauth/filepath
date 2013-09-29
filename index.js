@@ -77,6 +77,18 @@ FilePath.prototype = {
 		return !!stats.isDirectory();
 	},
 
+	newReadStream: function newReadStream(opts) {
+		return FS.createReadStream(this.path, opts);
+	},
+
+	newWriteStream: function newWriteStream(opts) {
+		opts = opts || (opts || {});
+		if (opts.encoding === void 0) {
+			opts.encoding = 'utf8';
+		}
+		return FS.createWriteStream(this.path, opts);
+	},
+
 	read: function read(opts) {
 		opts = (opts || Object.create(null));
 		var d = IOU.newDefer()
