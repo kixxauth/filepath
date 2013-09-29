@@ -56,7 +56,7 @@ exports["#newWriteStream() method"] = {
       , stream = path.newWriteStream()
 
     stream.on('finish', function () {
-      path.read({encoding: 'utf8'}).then(testContent, test.done);
+      path.read().then(testContent, test.done);
     });
 
     function testContent(content) {

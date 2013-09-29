@@ -95,6 +95,10 @@ FilePath.prototype = {
 		  , _this = this
 		  , parser = opts.parser
 
+		if (opts.encoding === void 0) {
+			opts.encoding = 'utf8';
+		}
+		
 		FS.readFile(this.path, opts, function (err, data) {
 			var deserializer, msg, e
 
