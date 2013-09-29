@@ -1,7 +1,7 @@
 Filepath
 ========
 
-A little interface for working with the filesystem in Node.js programs.
+A little utility interface for working with the file system in Node.js programs.
 
 ## Installation
 The most common use of Filepath is to use it as a library. In that case, just
