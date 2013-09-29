@@ -64,3 +64,19 @@ exports["Create a new FilePath object"] = {
     return test.done();
   }
 };
+
+
+exports["extendable prototype"] = {
+
+  "allows extending the FilePath prototype": function (test) {
+    FILEPATH.FilePath.prototype.foo = function () {
+      return this.append('foo');
+    }
+
+    var path = FILEPATH.newPath().foo()
+      , expected = process.cwd() + '/foo'
+
+    test.strictEqual(path.toString(), expected)
+    return test.done();
+  }
+};

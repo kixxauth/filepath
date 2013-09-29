@@ -8,72 +8,54 @@ var FS = require('fs')
 	, options = null
 
 
-exports.setOptions = function setOptions(opts) {
-	if (options) {
-		throw new Error("FilePath .setOptions() should only be called once.");
-	}
-	opts = (opts || Object.create(null));
-	options = Object.create(null)
-	options.serializers = opts.serializers || Object.create(null);
-	Object.freeze(options);
-	return;
+function FilePath(path) {
+	this.path = path;
 };
+exports.FilePath = FilePath;
 
-exports.newPath = function newPath(path) {
-	var self = Object.create(null)
-		, args = slice.call(arguments).map(function (item) {
-			if (item == void 0) return '';
-			return item +'';
-		})
+FilePath.prototype = {
 
-	if (args.length === 0 || args[args.length -1] === '') {
-		path = process.cwd();
-	} else if (args.length > 1) {
-		path = PATH.join.apply(PATH, args);
-	} else {
-		path = args[0];
-	}
-
-	self.resolve = function resolve(to) {
+	resolve: function resolve(to) {
 		var p
 		if (typeof to === 'string') {
-			p = PATH.resolve(path, to);
+			p = PATH.resolve(this.path, to);
 		} else {
-			p = PATH.resolve(path);
+			p = PATH.resolve(this.path);
 		}
-		return exports.newPath(p);
-	};
+		return FilePath.create(p);
+	},
 
-	self.append = function append() {
+	append: function append() {
 		// Join an arbitrary number of arguments.
-		return exports.newPath.apply(null, [path].concat(slice.call(arguments)));
-	};
+		var args = [this.path].concat(slice.call(arguments))
+		return FilePath.create.apply(null, args);
+	},
 
-	self.slice = function slice() {
-		return path.split(PATH.sep).filter(partsFilter);
-	};
+	split: function slice() {
+		return this.path.split(PATH.sep).filter(FilePath.partsFilter);
+	},
 
-	self.basename = function basename(ext) {
-		var p = PATH.basename(path, ext);
-		return exports.newPath(p);
-	};
+	basename: function basename(ext) {
+		var p = PATH.basename(this.path, ext);
+		return FilePath.create(p);
+	},
 
-	self.extname = function extname() {
-		return PATH.extname(path);
-	};
+	extname: function extname() {
+		return PATH.extname(this.path);
+	},
 
-	self.dirname = function dirname() {
-		var p = PATH.dirname(path);
-		return exports.newPath(p);
-	};
+	dirname: function dirname() {
+		var p = PATH.dirname(this.path);
+		return FilePath.create(p);
+	},
 
-	self.exists = function exists() {
-		return FS.existsSync(path) ? true : false;
-	};
+	exists: function exists() {
+		return FS.existsSync(this.path) ? true : false;
+	},
 
-	self.isFile = function isFile() {
+	isFile: function isFile() {
 		try {
-			var stats = FS.statSync(path);
+			var stats = FS.statSync(this.path);
 		} catch (err) {
 			if (err.code === 'ENOENT') {
 				return false;
@@ -81,11 +63,11 @@ exports.newPath = function newPath(path) {
 			throw err;
 		}
 		return !!stats.isFile();
-	};
+	},
 
-	self.isDirectory = function isDirectory() {
+	isDirectory: function isDirectory() {
 		try {
-			var stats = FS.statSync(path);
+			var stats = FS.statSync(this.path);
 		} catch (err) {
 			if (err.code === 'ENOENT') {
 				return false;
@@ -93,20 +75,21 @@ exports.newPath = function newPath(path) {
 			throw err;
 		}
 		return !!stats.isDirectory();
-	};
+	},
 
-	self.read = function read(opts) {
+	read: function read(opts) {
 		opts = (opts || Object.create(null));
 		var d = IOU.newDefer()
+		  , _this = this
 		  , parser = opts.parser
 
-		FS.readFile(path, opts, function (err, data) {
+		FS.readFile(this.path, opts, function (err, data) {
 			var deserializer, msg, e
 
 			if (err && err.code === 'ENOENT') {
 				return d.keep(null);
 			} else if (err && err.code === 'EISDIR') {
-				e = new Error("Cannot read '"+ path +"'; it is a directory.");
+				e = new Error("Cannot read '"+ _this.path +"'; it is a directory.");
 				e.code = "PATH_IS_DIRECTORY";
 				return d.fail(e);
 			} else if (err) {
@@ -115,7 +98,7 @@ exports.newPath = function newPath(path) {
 
 			// If a parser is specified, use it to deserialize the text.
 			if (parser) {
-				if (deserializer = getDeserializer(parser)) {
+				if (deserializer = _getDeserializer(parser)) {
 					try {
 						deserializer(data, function (err, data) {
 							if (err) {
@@ -137,21 +120,22 @@ exports.newPath = function newPath(path) {
 		});
 
 		return d.promise;
-	};
+	},
 
-	self.write = function write(data, opts) {
+	write: function write(data, opts) {
 		opts = (opts || Object.create(null));
 		var d = IOU.newDefer()
+		  , _this = this
 		  , parser = opts.parser
 		  , serializer
-		  , dir = self.dirname()
+		  , dir = this.dirname()
 
 		if (!dir.exists()) {
 			dir.mkdir();
 		}
 
 		if (parser) {
-			if (serializer = getSerializer(parser)) {
+			if (serializer = _getSerializer(parser)) {
 				try {
 					serializer(data, function (err, data) {
 						if (err) {
@@ -174,13 +158,13 @@ exports.newPath = function newPath(path) {
 		}
 
 		function write(data) {
-			FS.writeFile(path, data, opts, function (err) {
+			FS.writeFile(_this.path, data, opts, function (err) {
 				var deserializer, msg, e
 
 				if (err && err.code === 'ENOENT') {
 					return d.keep(null);
 				} else if (err && err.code === 'EISDIR') {
-					e = new Error("Cannot write to '"+ path +"'; it is a directory.");
+					e = new Error("Cannot write to '"+ _this.path +"'; it is a directory.");
 					e.code = "PATH_IS_DIRECTORY";
 					return d.fail(e);
 				} else if (err) {
@@ -192,18 +176,18 @@ exports.newPath = function newPath(path) {
 		}
 
 		return d.promise;
-	};
+	},
 
-	self.list = function list() {
+	list: function list() {
 		try {
-			var list = FS.readdirSync(path);
+			var list = FS.readdirSync(this.path);
 		} catch (err) {
 			var e;
 			if (err.code === 'ENOTDIR') {
-				e = new Error("Cannot list '"+ path +"'; it is a file.");
+				e = new Error("Cannot list '"+ this.path +"'; it is a file.");
 				e.code = "PATH_IS_FILE";
 			} else if (err.code === 'ENOENT') {
-				e = new Error("Cannot list '"+ path +"'; it does not exist.");
+				e = new Error("Cannot list '"+ this.path +"'; it does not exist.");
 				e.code = "PATH_NO_EXIST";
 			}
 
@@ -212,12 +196,13 @@ exports.newPath = function newPath(path) {
 		}
 
 		return list.map(function (item) {
-			return exports.newPath(path, item);
-		});
-	};
+			return FilePath.create(this.path, item);
+		}, this);
+	},
 
-	self.mkdir = function mkdir() {
-		var parts = self.resolve().toString().split(PATH.sep)
+	mkdir: function mkdir() {
+		var _this = this
+		  , parts = this.resolve().toString().split(PATH.sep)
 			, fullpath
 
 		// Shift off the empty string.
@@ -227,7 +212,7 @@ exports.newPath = function newPath(path) {
 			fullpath = fullpath.append(part);
 			if (fullpath.exists()) {
 				if (fullpath.isDirectory()) return fullpath;
-				var e = new Error("Cannot create directory '"+ path +"'; it is a file.");
+				var e = new Error("Cannot create directory '"+ _this.path +"'; it is a file.");
 				e.code = "PATH_IS_FILE";
 				throw e;
 			}
@@ -236,88 +221,126 @@ exports.newPath = function newPath(path) {
 			return fullpath;
 		}, exports.root());
 
-		return exports.newPath(fullpath);
-	};
+		return FilePath.create(fullpath);
+	},
 
-	self.recurse = function recurse(callback) {
-		var path = self.resolve();
+	recurse: function recurse(callback) {
+		var p = this.resolve();
 
-		if (!path.isDirectory()) {
-			return callback(path);
+		if (!p.isDirectory()) {
+			return callback(p);
 		}
 
 		try {
-			var listing = path.list();
+			var listing = p.list();
 		} catch (err) {
 			if (err.code === 'PATH_IS_FILE') {
-				return path;
+				return p;
 			}
 
 			throw err;
 		}
 
-		listing.sort(_alphaSort).forEach(function (li) {
+		listing.sort(FilePath.alphaSort).forEach(function (li) {
 			callback(li);
 			if (li.isDirectory()) {
 				li.recurse(callback);
 			}
 		});
 
-		return self;
-	};
+		return this;
+	},
 
-	function _alphaSort(a, b) {
-		a = a.toString();
-		b = b.toString();
-		if (a < b) return -1;
-		if (a > b) return 1;
-		return 0;
+	toString: function toString() {
+		return this.path;
 	}
-
-	self.toString = function toString() {
-		return path;
-	};
-
-	function getDeserializer(name) {
-		var deserializer = (options.serializers[name] || {}).deserialize
-		if (typeof deserializer === 'function') {
-			return deserializer;
-		}
-		return null;
-	}
-
-	function getSerializer(name) {
-		var serializer = (options.serializers[name] || {}).serialize
-		if (typeof serializer === 'function') {
-			return serializer;
-		}
-		return null;
-	}
-
-	function partsFilter(part) {
-		return part ? true : false;
-	}
-
-	return self;
 };
 
-exports.root = function root() {
-	return exports.newPath('/');
+FilePath.create = function create() {
+	var path, args
+
+	if (arguments.length === 1) {
+		path = arguments[0];
+	} else if (arguments.length < 1) {
+		path = process.cwd();
+	} else {
+	  args = slice.call(arguments).map(function (item) {
+			if (item == void 0) return '';
+			return item +'';
+		}).filter(FilePath.partsFilter);
+
+		if (args.length < 1) {
+			path = process.cwd();
+		} else {
+			path = PATH.join.apply(PATH, args);
+		}
+	}
+
+	return new FilePath(path.toString());
 };
 
-exports.home = function home() {
+FilePath.root = function root() {
+	return FilePath.create('/');
+};
+
+FilePath.home = function home() {
 	// This module is not really Windows ready, but this is how it might be
 	// done.
-	return exports.newPath(process.platform === 'win32' ?
-		process.env.USERPROFILE : process.env.HOME);
+	var path = process.platform === 'win32' ? process.env.USERPROFILE : process.env.HOME
+	return FilePath.create(path);
+};
+
+FilePath.alphaSort = function alphaSort(a, b) {
+	a = a.toString();
+	b = b.toString();
+	if (a < b) return -1;
+	if (a > b) return 1;
+	return 0;
+};
+
+FilePath.partsFilter = function partsFilter(part) {
+	return part ? true : false;
 };
 
 
-function decodeINI(str) {
-	return INI.decode(str);
+exports.setOptions = function setOptions(opts) {
+	if (options) {
+		throw new Error("FilePath .setOptions() should only be called once.");
+	}
+	opts = (opts || Object.create(null));
+	options = Object.create(null)
+	options.serializers = opts.serializers || Object.create(null);
+	Object.freeze(options);
+	return;
+};
+
+
+exports.newPath = function newPath() {
+	return FilePath.create.apply(null, arguments);
+};
+
+
+exports.root = function root() {
+	return FilePath.root();
+};
+
+
+exports.home = function home() {
+	return FilePath.home();
+};
+
+function _getDeserializer(name) {
+	var deserializer = (options.serializers[name] || {}).deserialize
+	if (typeof deserializer === 'function') {
+		return deserializer;
+	}
+	return null;
 }
 
-
-function decodeJSON(str) {
-	return JSON.parse(str);
+function _getSerializer(name) {
+	var serializer = (options.serializers[name] || {}).serialize
+	if (typeof serializer === 'function') {
+		return serializer;
+	}
+	return null;
 }

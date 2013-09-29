@@ -1,10 +1,10 @@
 var FILEPATH = require('../index')
 
 
-exports["#slice() method"] = {
+exports["#split() method"] = {
   "slices a FilePath into an Array of strings": function (test) {
     var path = FILEPATH.newPath('/foo/bar/baz/test.json')
-      , parts = path.slice()
+      , parts = path.split()
 
     test.ok(Array.isArray(parts), 'Array.isArray()');
     test.equal(parts.pop(), 'test.json', '.pop()');
@@ -13,7 +13,7 @@ exports["#slice() method"] = {
 
   "filters out empty path parts": function (test) {
     var path = FILEPATH.newPath('/foo//bar/baz/')
-      , parts = path.slice()
+      , parts = path.split()
 
     test.equal(parts.length, 3, 'length');
     test.equal(parts.shift(), 'foo', '.shift()');
