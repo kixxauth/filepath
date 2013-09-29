@@ -82,7 +82,6 @@ exports["#slice() method"] = {
     var path = FILEPATH.newPath('/foo//bar/baz/')
       , parts = path.slice()
 
-    console.log(parts)
     test.equal(parts.length, 3, 'length');
     test.equal(parts.shift(), 'foo', '.shift()');
     test.equal(parts.pop(), 'baz', '.pop()');
