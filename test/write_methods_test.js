@@ -26,7 +26,7 @@ exports["#.write() method"] = {
     var path = FILEPATH.newPath('/tmp/test-write-file.txt')
     test.strictEqual(path.exists(), false, 'path does not exist yet');
 
-    function testPlainText() {
+    function testPlainText(path) {
       test.ok(path.exists(), 'path exists');
       var rv = FS.readFileSync(path.toString(), 'utf8');
       test.equal(rv, 'foo=bar');
@@ -111,5 +111,28 @@ exports["#.write() method"] = {
     path.write({foo: 'bar'}, {parser: 'yaml'})
       .then(skip, testFailure)
       .then(test.done, test.done)
+  }
+};
+
+exports["#copy() method"] = {
+
+  "copies to target path": function (test) {
+    var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.ini')
+
+    test.expect(3);
+
+    function withNewPath(target) {
+      test.strictEqual(target.toString(), '/tmp/copied-test.ini');
+      test.ok(target.exists());
+      return target.read().then(testContent);
+    }
+
+    function testContent(content) {
+      test.strictEqual(content, 'foo=bar\n');
+      return test.done();
+    }
+
+    path.copy(FILEPATH.root().append('tmp', 'copied-test.ini'))
+      .then(withNewPath, test.done).failure(test.done);
   }
 };

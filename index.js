@@ -98,7 +98,7 @@ FilePath.prototype = {
 		if (opts.encoding === void 0) {
 			opts.encoding = 'utf8';
 		}
-		
+
 		FS.readFile(this.path, opts, function (err, data) {
 			var deserializer, msg, e
 
@@ -187,11 +187,22 @@ FilePath.prototype = {
 					return d.fail(err);
 				}
 
-				return d.keep();
+				return d.keep(_this);
 			});
 		}
 
 		return d.promise;
+	},
+
+	copy: function copy() {
+		var target = FilePath.create.apply(null, arguments)
+
+		function copyContents(contents) {
+			return target.write(contents, {encoding: null});
+		}
+
+
+		return this.read({encoding: null}).then(copyContents);
 	},
 
 	list: function list() {
