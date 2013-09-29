@@ -33,6 +33,7 @@ var FP = require('filepath')
 ### Create a new FilePath object
 ```JS
 var path = FP.newPath(__filname)
+assert(path instanceof FP.FilePath)
 
 // Defaults to current working directory:
 assert(FP.newPath().toString() === process.cwd())
@@ -41,11 +42,58 @@ assert(FP.newPath().toString() === process.cwd())
 assert(FP.newPath(__dirname, 'foo').toString() === __dirname + '/foo')
 ```
 
-## #append()
+### #append()
 ```JS
-var path = FP.newPath(__dirname)
-assert(path.append('foo').append('bar').toString() === __dirname + '/foo/bar')
+var path = FP.newPath(__dirname).append('foo').append('bar')
+assert(path instanceof FP.FilePath)
+assert(path.toString() === __dirname + '/foo/bar')
 ```
+
+### #resolve()
+```JS
+var path = FP.newPath(__dirname, 'lib').resolve('../README.md')
+assert(path instanceof FP.FilePath)
+assert(path.toString() === __filename)
+```
+
+### #dirname()
+```JS
+var path = FP.newPath(__filename).dirname()
+assert(path instanceof FP.FilePath)
+assert(path.toString() === __dirname)
+```
+
+### #basename()
+```JS
+var path = FP.newPath(__filename).basename()
+assert(path instanceof FP.FilePath)
+assert(path.toString() === 'README.md')
+```
+
+### #extname()
+```JS
+var path = FP.newPath(__filename).extname()
+assert(typeof path === 'string')
+assert(path === '.md')
+```
+
+### #split()
+```JS
+var parts = FP.newPath(__dirname).split()
+assert(Array.isArray(parts))
+// Notice that the first and last parts are not '' even though
+// the __dirname begins with a '/'.
+assert(parts.shift() === 'home')
+assert(parts.pop() === 'filepath')
+```
+
+### #exists()
+```JS
+var path = FP.newPath(__filename)
+assert(path.exists())
+assert(!path.append('foo').exists())
+```
+
 
 Copyright and License
 ---------------------
