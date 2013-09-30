@@ -47,9 +47,9 @@ assert(FP.newPath(__dirname, 'foo').toString() === __dirname + '/foo')
 
 ### #append()
 ```JS
-var path = FP.newPath(__dirname).append('foo').append('bar')
+var path = FP.newPath(__dirname).append('foo', 'bar').append('baz')
 assert(path instanceof FP.FilePath)
-assert(path.toString() === __dirname + '/foo/bar')
+assert(path.toString() === __dirname + '/foo/bar/baz')
 ```
 
 ### #resolve()
@@ -92,7 +92,7 @@ assert(parts.pop() === 'filepath')
 
 ### #exists()
 ```JS
-var path = FP.newPath(__filename)
+var path = FP.newPath(__dirname)
 assert(path.exists())
 assert(!path.append('foo').exists())
 ```
@@ -122,7 +122,6 @@ assert(readme.toString() === __filepath)
 
 ### #recurse()
 ```JS
-var counter = 0
 FP.newPath(__dirname).recurse(function (path) {
   // Each listing is a FilePath object with a fully resolved path string.
   assert(path instanceof FP.FilePath)

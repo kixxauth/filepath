@@ -4,7 +4,6 @@ var FS = require('fs')
   , IOU = require('iou')
 
   , slice = Array.prototype.slice
-
   , options = null
 
 
