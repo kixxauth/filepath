@@ -35,6 +35,9 @@ var FP = require('filepath')
 var path = FP.newPath(__filname)
 assert(path instanceof FP.FilePath)
 
+// The 'path' property is the string representation of the FilePath instance.
+assert(path.toString() === path.path)
+
 // Defaults to current working directory:
 assert(FP.newPath().toString() === process.cwd())
 
@@ -72,9 +75,9 @@ assert(path.toString() === 'README.md')
 
 ### #extname()
 ```JS
-var path = FP.newPath(__filename).extname()
-assert(typeof path === 'string')
-assert(path === '.md')
+var ext = FP.newPath(__filename).extname()
+assert(typeof ext === 'string')
+assert(ext === '.md')
 ```
 
 ### #split()
@@ -92,6 +95,115 @@ assert(parts.pop() === 'filepath')
 var path = FP.newPath(__filename)
 assert(path.exists())
 assert(!path.append('foo').exists())
+```
+
+### #isFile()
+```JS
+var path = FP.newPath(__filename)
+assert(path.isFile())
+assert(!path.resolve('../').isFile())
+```
+
+### #isDirectory()
+```JS
+var path = FP.newPath(__dirname)
+assert(path.isDirectory())
+assert(!path.append('README.md').isDirectory())
+```
+
+### #list()
+```JS
+var li = FP.newPath(__dirname).list()
+assert(Array.isArray(li))
+var readme = li[9]
+assert(readme instanceof FP.FilePath)
+assert(readme.toString() === __filepath)
+``` 
+
+### #recurse()
+```JS
+var counter = 0
+FP.newPath(__dirname).recurse(function (path) {
+  // Each listing is a FilePath object with a fully resolved path string.
+  assert(path instanceof FP.FilePath)
+  assert(path.toString().indexOf(__dirname) === 0)
+})
+```
+
+### #mkdir()
+```JS
+// Works kinda like 'mkdir -P'.
+var path = FP.newPath('/tmp/some/new/deep/dir')
+assert(path instanceof FP.FilePath)
+assert(path.exists())
+assert(path.isDirectory())
+```
+
+### #newReadStream()
+```JS
+var FS = require('fs')
+var stream = FP.newPath(__filename).newReadStream()
+assert(stream instanceof FS.ReadStream)
+```
+
+### #newWriteStream()
+```JS
+var FS = require('fs')
+var stream = FP.newPath('/tmp/new_file.txt').newWriteStream()
+assert(stream instanceof FS.WriteStream)
+```
+
+### #read()
+```JS
+var path = FP.newPath(__filename)
+
+// #read() returns a promise object with #then() and #failure() methods.
+path.read().then(function (contents) {
+  // Defaults to 'utf8' so you get a string here instead of a Buffer.
+  assert(typeof contents === 'string')
+}).failure(console.error)
+```
+
+### #write()
+```JS
+var FS = require('fs')
+var path = FP.newPath('/tmp/new_file.txt')
+
+// #write() returns a promise object with #then() and #failure() methods.
+path.write('Hello world!\n').then(function (returnedPath) {
+  assert(returnedPath === path)
+  // Writes the file contents in 'utf8' by default.
+  var content = FS.readFileSync(path.toString(), {encoding: 'utf8'})
+  assert(content === 'Hello world!\n')
+}).failure(console.error)
+```
+
+### #copy()
+```JS
+var FS = require('fs')
+var path = FP.newPath(__filename)
+var originalContent = FS.readFileSync(path.toString(), {encoding: 'utf8'})
+
+// #copy() returns a promise object with #then() and #failure() methods.
+path.copy('/tmp/README.md').then(function (target) {
+  // The callback value (`target`) is a new FilePath instance.
+  assert(target instanceof FP.FilePath)
+  assert(target.toString() === '/tmp/README.md')
+  var targetContent = FS.readFileSync(target.toString(), {encoding: 'utf8'})
+  assert(targetContent === originalContent)
+}).failure(console.error)
+```
+
+### .root()
+```JS
+// Handy shortcut class method.
+assert(FP.root() === '/')
+```
+
+### .home()
+```JS
+// Another handy shortcut class method.
+assert(FP.home() === '/home/kris')
 ```
 
 
