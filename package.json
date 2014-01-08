@@ -1,6 +1,6 @@
 {
     "name": "filepath",
-    "version": "0.5.0",
+    "version": "0.7.0",
     "description": "A little utility interface for working with the filesystem in Node.js.",
     "author": "Kris Walker <kris@kixx.name> (http://www.kixx.name/)",
     "keywords": ["filepath", "files","directories","file", "system","filesystem","path"],
