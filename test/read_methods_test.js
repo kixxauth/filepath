@@ -49,39 +49,5 @@ exports["#read() method"] = {
     path.read()
       .then(testPlainText)
       .then(test.done, test.done)
-  },
-
-  "calls optional deserialization function": function (test) {
-    var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.json');
-
-    test.expect(1);
-    function testParser(rv) {
-      test.equal(rv.foo, 'bar');
-      return;
-    }
-
-    path.read({parser: 'json'})
-      .then(testParser)
-      .then(test.done, test.done)
-  },
-
-  "fails when a parser is specified but the deserializer is not defined": function (test) {
-    var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.json');
-    test.expect(1);
-
-    function skip(rv) {
-      console.log(rv);
-      test.ok(false, 'skip should not be called');
-      return;
-    }
-
-    function testFailure(err) {
-      test.equal(err.code, 'INVALID_DESERIALIZER', 'Error.code');
-      return;
-    }
-
-    path.read({parser: 'yaml'})
-      .then(skip, testFailure)
-      .then(test.done, test.done)
   }
 };

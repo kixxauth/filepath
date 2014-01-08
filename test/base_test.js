@@ -1,28 +1,5 @@
 var FILEPATH = require('../index')
 
-exports["MODULE.setOptions"] = {
-  "cannot be called more than once": function (test) {
-    var serializers = {
-      'json': {
-        deserialize: function (text, callback) {
-          return callback(null, JSON.parse(text));
-        },
-
-        serialize: function (object, callback) {
-          return callback(null, JSON.stringify(object));
-        }
-      }
-    };
-
-    FILEPATH.setOptions({serializers: serializers});
-
-    test.throws(function () {
-      FILEPATH.setOptions()
-    }, "FilePath .setOptions() should only be called once.");
-    return test.done();
-  }
-};
-
 exports["Create a new FilePath object"] = {
 
   "with a single path part": function (test) {

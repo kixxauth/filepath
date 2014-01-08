@@ -4,7 +4,6 @@ var FS = require('fs')
   , Promise = require('iou').Promise
 
   , slice = Array.prototype.slice
-  , options = null
 
 
 function FilePath(path) {
@@ -93,7 +92,6 @@ FilePath.prototype = {
 
     var self = this
       , promise
-      , parser = opts.parser
 
     if (opts.encoding === void 0) {
       opts.encoding = 'utf8';
@@ -101,7 +99,7 @@ FilePath.prototype = {
 
     promise = new Promise(function (resolve, reject) {
       FS.readFile(self.path, opts, function (err, data) {
-        var deserializer, msg, e
+        var e
 
         if (err && err.code === 'ENOENT') {
           return resolve(null);
@@ -113,27 +111,7 @@ FilePath.prototype = {
           return reject(err);
         }
 
-        // If a parser is specified, use it to deserialize the text.
-        if (parser) {
-          if (deserializer = _getDeserializer(parser)) {
-            try {
-              deserializer(data, function (err, data) {
-                if (err) {
-                  return reject(err);
-                }
-                return resolve(data);
-              });
-            } catch (e) {
-              return reject(e);
-            }
-          } else {
-            e = new Error('The "'+ parser +'" deserializer is not defined.');
-            e.code = "INVALID_DESERIALIZER";
-            return reject(e);
-          }
-        } else {
-          return resolve(data);
-        }
+        return resolve(data);
       });
     });
 
@@ -145,7 +123,6 @@ FilePath.prototype = {
 
     var self = this
       , promise
-      , parser = opts.parser
       , dir = this.dirname()
 
     if (!dir.exists()) {
@@ -153,48 +130,21 @@ FilePath.prototype = {
     }
 
     promise = new Promise(function (resolve, reject) {
-      var serializer
+      FS.writeFile(self.path, data, opts, function (err) {
+        var e
 
-      if (parser) {
-        if (serializer = _getSerializer(parser)) {
-          try {
-            serializer(data, function (err, data) {
-              if (err) {
-                reject(err);
-              } else {
-                write(data);
-              }
-              return;
-            });
-          } catch (e) {
-            reject(e);
-          }
-        } else {
-          e = new Error('The "'+ parser +'" serializer is not defined.');
-          e.code = "INVALID_SERIALIZER";
-          reject(e);
+        if (err && err.code === 'ENOENT') {
+          return resolve(null);
+        } else if (err && err.code === 'EISDIR') {
+          e = new Error("Cannot write to '"+ self.path +"'; it is a directory.");
+          e.code = "PATH_IS_DIRECTORY";
+          return reject(e);
+        } else if (err) {
+          return reject(err);
         }
-      } else {
-        write(data);
-      }
 
-      function write(data) {
-        FS.writeFile(self.path, data, opts, function (err) {
-          var e
-
-          if (err && err.code === 'ENOENT') {
-            return resolve(null);
-          } else if (err && err.code === 'EISDIR') {
-            e = new Error("Cannot write to '"+ self.path +"'; it is a directory.");
-            e.code = "PATH_IS_DIRECTORY";
-            return reject(e);
-          } else if (err) {
-            return reject(err);
-          }
-
-          return resolve(self);
-        });
-      }
+        return resolve(self);
+      });
     });
 
     return promise;
@@ -336,35 +286,6 @@ FilePath.partsFilter = function partsFilter(part) {
 };
 
 
-exports.setOptions = function setOptions(opts) {
-  if (options) {
-    throw new Error("FilePath .setOptions() should only be called once.");
-  }
-  opts = (opts || Object.create(null));
-  options = Object.create(null)
-  options.serializers = opts.serializers || Object.create(null);
-  Object.freeze(options);
-  return;
-};
-
-
 exports.newPath = FilePath.create;
 exports.root = FilePath.root;
 exports.home = FilePath.home;
-
-
-function _getDeserializer(name) {
-  var deserializer = (options.serializers[name] || {}).deserialize
-  if (typeof deserializer === 'function') {
-    return deserializer;
-  }
-  return null;
-}
-
-function _getSerializer(name) {
-  var serializer = (options.serializers[name] || {}).serialize
-  if (typeof serializer === 'function') {
-    return serializer;
-  }
-  return null;
-}
