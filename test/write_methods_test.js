@@ -34,7 +34,7 @@ exports["#.write() method"] = {
     }
 
     path.write("foo=bar")
-      .then(testPlainText, test.done)
+      .then(testPlainText)
       .then(test.done, test.done)
   },
 
@@ -51,7 +51,7 @@ exports["#.write() method"] = {
     }
 
     path.write("deep foo=bar")
-      .then(testPlainText, test.done)
+      .then(testPlainText)
       .then(test.done, test.done)
   },
 
@@ -89,7 +89,7 @@ exports["#.write() method"] = {
     }
 
     path.write({foo: 'bar'}, {parser: 'json'})
-      .then(testParser, test.done)
+      .then(testParser)
       .then(test.done, test.done)
   },
 
@@ -133,6 +133,6 @@ exports["#copy() method"] = {
     }
 
     path.copy(FILEPATH.root().append('tmp', 'copied-test.ini'))
-      .then(withNewPath, test.done).catch(test.done);
+      .then(withNewPath).catch(test.done);
   }
 };

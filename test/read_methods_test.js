@@ -12,7 +12,7 @@ exports["#read() method"] = {
     }
 
     path.read()
-      .then(whenNotFound, test.done)
+      .then(whenNotFound)
       .then(test.done, test.done)
   },
 
@@ -47,7 +47,7 @@ exports["#read() method"] = {
     }
 
     path.read()
-      .then(testPlainText, test.done)
+      .then(testPlainText)
       .then(test.done, test.done)
   },
 
@@ -61,7 +61,7 @@ exports["#read() method"] = {
     }
 
     path.read({parser: 'json'})
-      .then(testParser, test.done)
+      .then(testParser)
       .then(test.done, test.done)
   },
 
