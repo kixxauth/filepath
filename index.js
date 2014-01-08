@@ -1,7 +1,7 @@
 var FS = require('fs')
   , PATH = require('path')
 
-  , IOU = require('iou')
+  , Promise = require('iou').Promise
 
   , slice = Array.prototype.slice
   , options = null
@@ -90,107 +90,114 @@ FilePath.prototype = {
 
   read: function read(opts) {
     opts = (opts || Object.create(null));
-    var d = IOU.newDefer()
-      , _this = this
+
+    var self = this
+      , promise
       , parser = opts.parser
 
     if (opts.encoding === void 0) {
       opts.encoding = 'utf8';
     }
 
-    FS.readFile(this.path, opts, function (err, data) {
-      var deserializer, msg, e
+    promise = new Promise(function (resolve, reject) {
+      FS.readFile(self.path, opts, function (err, data) {
+        var deserializer, msg, e
 
-      if (err && err.code === 'ENOENT') {
-        return d.keep(null);
-      } else if (err && err.code === 'EISDIR') {
-        e = new Error("Cannot read '"+ _this.path +"'; it is a directory.");
-        e.code = "PATH_IS_DIRECTORY";
-        return d.fail(e);
-      } else if (err) {
-        return d.fail(err);
-      }
+        if (err && err.code === 'ENOENT') {
+          return resolve(null);
+        } else if (err && err.code === 'EISDIR') {
+          e = new Error("Cannot read '"+ self.path +"'; it is a directory.");
+          e.code = "PATH_IS_DIRECTORY";
+          return reject(e);
+        } else if (err) {
+          return reject(err);
+        }
 
-      // If a parser is specified, use it to deserialize the text.
-      if (parser) {
-        if (deserializer = _getDeserializer(parser)) {
-          try {
-            deserializer(data, function (err, data) {
-              if (err) {
-                return d.fail(err);
-              }
-              return d.keep(data);
-            });
-          } catch (e) {
-            return d.fail(e);
+        // If a parser is specified, use it to deserialize the text.
+        if (parser) {
+          if (deserializer = _getDeserializer(parser)) {
+            try {
+              deserializer(data, function (err, data) {
+                if (err) {
+                  return reject(err);
+                }
+                return resolve(data);
+              });
+            } catch (e) {
+              return reject(e);
+            }
+          } else {
+            e = new Error('The "'+ parser +'" deserializer is not defined.');
+            e.code = "INVALID_DESERIALIZER";
+            return reject(e);
           }
         } else {
-          e = new Error('The "'+ parser +'" deserializer is not defined.');
-          e.code = "INVALID_DESERIALIZER";
-          return d.fail(e);
+          return resolve(data);
         }
-      } else {
-        return d.keep(data);
-      }
+      });
     });
 
-    return d.promise;
+    return promise;
   },
 
   write: function write(data, opts) {
     opts = (opts || Object.create(null));
-    var d = IOU.newDefer()
-      , _this = this
+
+    var self = this
+      , promise
       , parser = opts.parser
-      , serializer
       , dir = this.dirname()
 
     if (!dir.exists()) {
       dir.mkdir();
     }
 
-    if (parser) {
-      if (serializer = _getSerializer(parser)) {
-        try {
-          serializer(data, function (err, data) {
-            if (err) {
-              d.fail(err);
-            } else {
-              write(data);
-            }
-            return;
-          });
-        } catch (e) {
-          d.fail(e);
+    promise = new Promise(function (resolve, reject) {
+      var serializer
+
+      if (parser) {
+        if (serializer = _getSerializer(parser)) {
+          try {
+            serializer(data, function (err, data) {
+              if (err) {
+                reject(err);
+              } else {
+                write(data);
+              }
+              return;
+            });
+          } catch (e) {
+            reject(e);
+          }
+        } else {
+          e = new Error('The "'+ parser +'" serializer is not defined.');
+          e.code = "INVALID_SERIALIZER";
+          reject(e);
         }
       } else {
-        e = new Error('The "'+ parser +'" serializer is not defined.');
-        e.code = "INVALID_SERIALIZER";
-        d.fail(e);
+        write(data);
       }
-    } else {
-      write(data);
-    }
 
-    function write(data) {
-      FS.writeFile(_this.path, data, opts, function (err) {
-        var deserializer, msg, e
+      function write(data) {
+        FS.writeFile(self.path, data, opts, function (err) {
+          var e
 
-        if (err && err.code === 'ENOENT') {
-          return d.keep(null);
-        } else if (err && err.code === 'EISDIR') {
-          e = new Error("Cannot write to '"+ _this.path +"'; it is a directory.");
-          e.code = "PATH_IS_DIRECTORY";
-          return d.fail(e);
-        } else if (err) {
-          return d.fail(err);
-        }
+          if (err && err.code === 'ENOENT') {
+            return resolve(null);
+          } else if (err && err.code === 'EISDIR') {
+            e = new Error("Cannot write to '"+ self.path +"'; it is a directory.");
+            e.code = "PATH_IS_DIRECTORY";
+            return reject(e);
+          } else if (err) {
+            return reject(err);
+          }
 
-        return d.keep(_this);
-      });
-    }
+          return resolve(self);
+        });
+      }
+    });
 
-    return d.promise;
+    return promise;
   },
 
   copy: function copy() {

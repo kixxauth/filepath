@@ -133,6 +133,6 @@ exports["#copy() method"] = {
     }
 
     path.copy(FILEPATH.root().append('tmp', 'copied-test.ini'))
-      .then(withNewPath, test.done).failure(test.done);
+      .then(withNewPath, test.done).catch(test.done);
   }
 };
