@@ -242,7 +242,7 @@ FilePath.prototype = {
 FilePath.create = function create() {
   var path, args
 
-  if (arguments.length === 1) {
+  if (arguments.length === 1 && arguments[0]) {
     path = arguments[0];
   } else if (arguments.length < 1) {
     path = process.cwd();

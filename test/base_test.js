@@ -35,6 +35,12 @@ exports["Create a new FilePath object"] = {
     return test.done();
   },
 
+  "with undefined": function (test) {
+    var path = FILEPATH.newPath(undefined);
+    test.strictEqual(path.toString(), process.cwd());
+    return test.done();
+  },
+
   "with multiple void args": function (test) {
     var path = FILEPATH.newPath(null, undefined);
     test.strictEqual(path.toString(), process.cwd());
