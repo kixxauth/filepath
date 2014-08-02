@@ -90,25 +90,40 @@ FilePath.prototype = {
   read: function read(opts) {
     opts = (opts || Object.create(null));
 
-    var self = this
-      , promise
-
     if (opts.encoding === void 0) {
       opts.encoding = 'utf8';
     }
 
+    var self = this
+      , promise
+
+    function handleError(err, reject) {
+        if (err.code === 'ENOENT') {
+          return null;
+        } else if (err.code === 'EISDIR') {
+          err = new Error("Cannot read '"+ self.path +"'; it is a directory.");
+          err.code = "PATH_IS_DIRECTORY";
+          throw err;
+        }
+        throw err;
+    }
+
+    if (opts.sync || opts.synchronous) {
+      try {
+        return FS.readFileSync(this.path, opts);
+      } catch (err) {
+        return handleError(err);
+      }
+    }
+
     promise = new Promise(function (resolve, reject) {
       FS.readFile(self.path, opts, function (err, data) {
-        var e
-
-        if (err && err.code === 'ENOENT') {
-          return resolve(null);
-        } else if (err && err.code === 'EISDIR') {
-          e = new Error("Cannot read '"+ self.path +"'; it is a directory.");
-          e.code = "PATH_IS_DIRECTORY";
-          return reject(e);
-        } else if (err) {
-          return reject(err);
+        if (err) {
+          try {
+            return resolve(handleError(err));
+          } catch (e) {
+            return reject(e);
+          }
         }
 
         return resolve(data);

@@ -38,9 +38,10 @@ exports["#read() method"] = {
   },
 
   "reads plain text files by default": function (test) {
+    test.expect(1);
+
     var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.ini')
 
-    test.expect(1);
     function testPlainText(rv) {
       test.equal(rv, 'foo=bar\n', 'plain text');
       return;
@@ -49,5 +50,38 @@ exports["#read() method"] = {
     path.read()
       .then(testPlainText)
       .then(test.done, test.done)
+  },
+
+  "optionally reads files synchronously": function (test) {
+    test.expect(1);
+
+    var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.ini')
+
+    var rv = path.read({sync: true})
+    test.equal(rv, 'foo=bar\n', 'synchronous read');
+    test.done()
+  },
+
+  "synchronously returns null when not found": function (test) {
+    test.expect(1);
+    var path = FILEPATH.newPath('foo')
+
+    var rv = path.read({sync: true})
+    test.equal(rv, null, 'sync not found rv === null')
+    test.done()
+  },
+
+  "synchronously throws when a path is a directory": function (test) {
+    test.expect(2);
+    var path = FILEPATH.newPath(__dirname)
+
+    try {
+      path.read({sync: true});
+    } catch (err) {
+      test.equal(err.code, "PATH_IS_DIRECTORY", 'sync Error code');
+      test.equal(err.message, "Cannot read '"+ __dirname +"'; it is a directory.", 'sync Error message');
+    }
+
+    test.done();
   }
 };
