@@ -8,14 +8,7 @@ exports["#.write() method"] = {
     // Do the cleanup.
     try {
       FS.unlinkSync('/tmp/test-write-file.txt');
-    } catch (e) { }
-
-    try {
-      FS.unlinkSync('/tmp/test-write-file.json');
-    } catch (e) { }
-
-    try {
-      FS.unlinkSync('/tmp/new-dir/test-write-file.txt');
+      FS.unlinkSync('/tmp/test-write-file-sync.txt');
     } catch (e) { }
 
     return done();
