@@ -50,10 +50,14 @@ exports["#newWriteStream() method"] = {
   },
 
   "with options": function (test) {
-    var path = FILESTREAM.newPath('/tmp/test-writestream-file.txt')
+    test.expect(2);
+    var stream
+      , path = FILESTREAM.newPath('/tmp/test-writestream-file.txt')
 
-      // Unlike Node.js, encoding defaults to 'utf8' (instead of null).
-      , stream = path.newWriteStream()
+    test.strictEqual(path.exists(), false, 'path does not exist yet');
+
+    // Unlike Node.js, encoding defaults to 'utf8' (instead of null).
+    stream = path.newWriteStream()
 
     stream.on('finish', function () {
       path.read().then(testContent, test.done);
