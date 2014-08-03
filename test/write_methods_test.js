@@ -42,6 +42,18 @@ exports["#.write() method"] = {
       .then(test.done, test.done)
   },
 
+  "writes plain text files synchronously": function (test) {
+    test.expect(3);
+    var path = FILEPATH.newPath('/tmp/test-write-file-sync.txt')
+    test.strictEqual(path.exists(), false, 'path does not exist yet');
+
+    path.write("foo=bar", {sync: true});
+    test.ok(path.exists(), 'path exists');
+    var rv = FS.readFileSync(path.toString(), 'utf8');
+    test.equal(rv, 'foo=bar');
+    test.done();
+  },
+
   "creates directories if needed": function (test) {
     test.expect(3);
     var path = FILEPATH.newPath('/tmp/new-dir/test-write-file.txt')
@@ -57,6 +69,18 @@ exports["#.write() method"] = {
     path.write("deep foo=bar")
       .then(testPlainText)
       .then(test.done, test.done)
+  },
+
+  "creates directories if needed": function (test) {
+    test.expect(3);
+    var path = FILEPATH.newPath('/tmp/new-dir/test-write-file-sync.txt')
+    test.strictEqual(path.exists(), false, 'path does not exist yet');
+
+    path.write("deep foo=bar", {sync: true});
+    test.ok(path.exists(), 'path exists');
+    var rv = FS.readFileSync(path.toString(), 'utf8');
+    test.equal(rv, 'deep foo=bar');
+    test.done();
   },
 
   "throws when a path is a directory": function (test) {
@@ -78,6 +102,21 @@ exports["#.write() method"] = {
     path.write()
       .then(skip, onFailure)
       .then(test.done, test.done)
+  },
+
+  "throws when a path is a directory": function (test) {
+    var path = FILEPATH.newPath(__dirname)
+
+    test.expect(2);
+
+    try {
+      path.write('', {sync: true});
+    } catch (err) {
+      test.equal(err.code, "PATH_IS_DIRECTORY", 'Error code');
+      test.equal(err.message, "Cannot write to '"+ __dirname +"'; it is a directory.", 'Error message');
+    }
+
+    test.done();
   }
 };
 

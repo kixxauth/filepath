@@ -143,6 +143,25 @@ FilePath.prototype = {
       dir.mkdir();
     }
 
+    function handleError(err, reject) {
+        if (err.code === 'ENOENT') {
+          return null;
+        } else if (err.code === 'EISDIR') {
+          err = new Error("Cannot write to '"+ self.path +"'; it is a directory.");
+          err.code = "PATH_IS_DIRECTORY";
+          throw err;
+        }
+        throw err;
+    }
+
+    if (opts.sync || opts.synchronous) {
+      try {
+        return FS.writeFileSync(self.path, data, opts);
+      } catch (err) {
+        return handleError(err);
+      }
+    }
+
     promise = new Promise(function (resolve, reject) {
       FS.writeFile(self.path, data, opts, function (err) {
         var e
