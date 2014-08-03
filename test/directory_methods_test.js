@@ -92,11 +92,12 @@ exports["#recurse() method"] = {
       , results = [
             resolved.append('foo').toString()
           , resolved.append('foo', '.gitkeep').toString()
+          , resolved.append('js_module.js').toString()
           , resolved.append('test.ini').toString()
           , resolved.append('test.json').toString()
         ]
 
-    test.expect(4);
+    test.expect(5);
     path.recurse(function (node) {
       test.equal(node.toString(), results[count], results[count]);
       count += 1;

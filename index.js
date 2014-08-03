@@ -212,6 +212,15 @@ FilePath.prototype = {
     return this.read(opts).then(copyContents);
   },
 
+  require: function path_require(contextualRequire) {
+    if (typeof contextualRequire !== 'function') {
+      var err = new Error("Must pass a require function to #require().");
+      err.code = 'NO_REQUIRE_CONTEXT';
+      throw err;
+    }
+    return contextualRequire(this.path);
+  },
+
   list: function list() {
     try {
       var list = FS.readdirSync(this.path);
