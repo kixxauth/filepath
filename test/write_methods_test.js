@@ -8,7 +8,18 @@ exports["#.write() method"] = {
     // Do the cleanup.
     try {
       FS.unlinkSync('/tmp/test-write-file.txt');
+    } catch (e) { }
+    try {
       FS.unlinkSync('/tmp/test-write-file-sync.txt');
+    } catch (e) { }
+    try {
+      FS.unlinkSync('/tmp/new-dir/test-write-file.txt');
+    } catch (e) { }
+    try {
+      FS.unlinkSync('/tmp/new-dir/test-write-file-sync.txt');
+    } catch (e) { }
+    try {
+      FS.rmdirSync('/tmp/new-dir');
     } catch (e) { }
 
     return done();
@@ -71,11 +82,22 @@ exports["#.write() method"] = {
 };
 
 exports["#copy() method"] = {
+  setUp: function (done) {
+    // Do the cleanup.
+    try {
+      FS.unlinkSync('/tmp/copied-test.ini');
+    } catch (e) { }
+
+    return done();
+  },
+
 
   "copies to target path": function (test) {
+    test.expect(4);
     var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.ini')
+      , target = FILEPATH.root().append('tmp', 'copied-test.ini')
 
-    test.expect(3);
+    test.strictEqual(target.exists(), false, 'path does not exist yet');
 
     function withNewPath(target) {
       test.strictEqual(target.toString(), '/tmp/copied-test.ini');
@@ -88,7 +110,8 @@ exports["#copy() method"] = {
       return test.done();
     }
 
-    path.copy(FILEPATH.root().append('tmp', 'copied-test.ini'))
-      .then(withNewPath).catch(test.done);
+    path.copy(target)
+      .then(withNewPath)
+      .catch(test.done);
   }
 };
