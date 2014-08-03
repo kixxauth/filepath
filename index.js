@@ -28,7 +28,7 @@ FilePath.prototype = {
     return FilePath.create.apply(null, args);
   },
 
-  split: function slice() {
+  split: function split() {
     return this.path.split(PATH.sep).filter(FilePath.partsFilter);
   },
 
@@ -183,15 +183,33 @@ FilePath.prototype = {
     return promise;
   },
 
-  copy: function copy() {
-    var target = FilePath.create.apply(null, arguments)
+  copy: function copy(opts) {
+    var opts, target
+      , args = slice.call(arguments)
+      , lastArg = args[args.length -1]
+
+    if (!args.length || lastArg instanceof FilePath || typeof lastArg === 'string') {
+      opts = Object.create(null);
+    } else {
+      opts = args.pop();
+    }
+
+    target = FilePath.create.apply(null, args)
+
+    // Use a buffer.
+    opts.encoding = null;
+
+    if (opts.sync || opts.synchronous) {
+      var contents = this.read(opts);
+      return target.write(contents, opts);
+    }
 
     function copyContents(contents) {
-      return target.write(contents, {encoding: null});
+      return target.write(contents, opts);
     }
 
 
-    return this.read({encoding: null}).then(copyContents);
+    return this.read(opts).then(copyContents);
   },
 
   list: function list() {

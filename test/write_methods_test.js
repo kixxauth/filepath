@@ -126,6 +126,9 @@ exports["#copy() method"] = {
     try {
       FS.unlinkSync('/tmp/copied-test.ini');
     } catch (e) { }
+    try {
+      FS.unlinkSync('/tmp/copied-test-sync.ini');
+    } catch (e) { }
 
     return done();
   },
@@ -152,5 +155,20 @@ exports["#copy() method"] = {
     path.copy(target)
       .then(withNewPath)
       .catch(test.done);
+  },
+
+  "copies to target path synchronously": function (test) {
+    test.expect(4);
+    var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.ini')
+      , target = FILEPATH.root().append('tmp', 'copied-test-sync.ini')
+
+    test.strictEqual(target.exists(), false, 'path does not exist yet');
+
+    path.copy(target, {sync: true});
+    test.strictEqual(target.toString(), '/tmp/copied-test-sync.ini');
+    test.ok(target.exists());
+    var content = target.read({sync: true});
+    test.strictEqual(content, 'foo=bar\n');
+    test.done();
   }
 };
