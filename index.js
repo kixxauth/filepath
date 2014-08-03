@@ -9,7 +9,6 @@ var FS = require('fs')
 function FilePath(path) {
   this.path = path;
 };
-exports.FilePath = FilePath;
 
 FilePath.prototype = {
 
@@ -217,7 +216,7 @@ FilePath.prototype = {
 
       FS.mkdirSync(fullpath.toString());
       return fullpath;
-    }, exports.root());
+    }, FilePath.root());
 
     return FilePath.create(fullpath);
   },
@@ -301,6 +300,7 @@ FilePath.partsFilter = function partsFilter(part) {
 };
 
 
-exports.newPath = FilePath.create;
+exports.FilePath = FilePath;
+exports.create = exports.newPath = FilePath.create;
 exports.root = FilePath.root;
 exports.home = FilePath.home;
