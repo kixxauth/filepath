@@ -26,23 +26,25 @@ API Quick Reference
 -------------------
 
 ### Load the module
-```JS  
+```JS
 var FP = require('filepath')
 ```
 
 ### Create a new FilePath object
 ```JS
-var path = FP.newPath(__filname)
+var path = FP.create(__filname)
 assert(path instanceof FP.FilePath)
 
 // The 'path' property is the string representation of the FilePath instance.
 assert(path.toString() === path.path)
 
 // Defaults to current working directory:
-assert(FP.newPath().toString() === process.cwd())
+var path = FP.create()
+assert(path.toString() === process.cwd())
 
-// Joins multiple parts:
-assert(FP.newPath(__dirname, 'foo').toString() === __dirname + '/foo')
+// Joins multiple parts from arguments:
+var path = FP.create(__dirname, 'foo')
+assert(path.toString() === __dirname + '/foo')
 ```
 
 ### #append()
