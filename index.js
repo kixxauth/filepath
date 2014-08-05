@@ -156,7 +156,8 @@ FilePath.prototype = {
 
     if (opts.sync || opts.synchronous) {
       try {
-        return FS.writeFileSync(self.path, data, opts);
+        FS.writeFileSync(self.path, data, opts);
+        return self;
       } catch (err) {
         return handleError(err);
       }

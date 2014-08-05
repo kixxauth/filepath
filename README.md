@@ -49,82 +49,72 @@ assert(path.toString() === __dirname + '/foo')
 
 ### #append()
 ```JS
-var path = FP.newPath(__dirname).append('foo', 'bar').append('baz')
-assert(path instanceof FP.FilePath)
+var path = FP.create(__dirname).append('foo', 'bar').append('baz')
 assert(path.toString() === __dirname + '/foo/bar/baz')
 ```
 
 ### #resolve()
 ```JS
-var path = FP.newPath(__dirname, 'lib').resolve('../README.md')
-assert(path instanceof FP.FilePath)
+var path = FP.create(__dirname, 'lib').resolve('../README.md')
 assert(path.toString() === __filename)
 ```
 
 ### #dirname()
 ```JS
-var path = FP.newPath(__filename).dirname()
-assert(path instanceof FP.FilePath)
+var path = FP.create(__filename).dirname()
 assert(path.toString() === __dirname)
 ```
 
 ### #basename()
 ```JS
-var path = FP.newPath(__filename).basename()
-assert(path instanceof FP.FilePath)
+var path = FP.create(__filename).basename()
 assert(path.toString() === 'README.md')
 ```
 
 ### #extname()
 ```JS
-var ext = FP.newPath(__filename).extname()
-assert(typeof ext === 'string')
+var ext = FP.create(__filename).extname()
 assert(ext === '.md')
 ```
 
 ### #split()
 ```JS
-var parts = FP.newPath(__dirname).split()
+var parts = FP.create(__dirname).split()
 assert(Array.isArray(parts))
-// Notice that the first and last parts are not '' even though
-// the __dirname begins with a '/'.
 assert(parts.shift() === 'home')
 assert(parts.pop() === 'filepath')
 ```
 
 ### #exists()
 ```JS
-var path = FP.newPath(__dirname)
+var path = FP.create(__dirname)
 assert(path.exists())
 assert(!path.append('foo').exists())
 ```
 
 ### #isFile()
 ```JS
-var path = FP.newPath(__filename)
+var path = FP.create(__filename)
 assert(path.isFile())
-assert(!path.resolve('../').isFile())
 ```
 
 ### #isDirectory()
 ```JS
-var path = FP.newPath(__dirname)
+var path = FP.create(__dirname)
 assert(path.isDirectory())
-assert(!path.append('README.md').isDirectory())
 ```
 
 ### #list()
 ```JS
-var li = FP.newPath(__dirname).list()
+var li = FP.create(__dirname).list()
 assert(Array.isArray(li))
 var readme = li[9]
 assert(readme instanceof FP.FilePath)
-assert(readme.toString() === __filepath)
-``` 
+```
 
 ### #recurse()
 ```JS
-FP.newPath(__dirname).recurse(function (path) {
+FP.create(__dirname).recurse(function (path) {
   // Each listing is a FilePath object with a fully resolved path string.
   assert(path instanceof FP.FilePath)
   assert(path.toString().indexOf(__dirname) === 0)
@@ -134,7 +124,7 @@ FP.newPath(__dirname).recurse(function (path) {
 ### #mkdir()
 ```JS
 // Works kinda like 'mkdir -P'.
-var path = FP.newPath('/tmp/some/new/deep/dir')
+var path = FP.create('/tmp/some/new/deep/dir').mkdir()
 assert(path instanceof FP.FilePath)
 assert(path.exists())
 assert(path.isDirectory())
@@ -143,56 +133,67 @@ assert(path.isDirectory())
 ### #newReadStream()
 ```JS
 var FS = require('fs')
-var stream = FP.newPath(__filename).newReadStream()
+var stream = FP.create(__filename).newReadStream()
 assert(stream instanceof FS.ReadStream)
 ```
 
 ### #newWriteStream()
 ```JS
 var FS = require('fs')
-var stream = FP.newPath('/tmp/new_file.txt').newWriteStream()
+var stream = FP.create('/tmp/new_file.txt').newWriteStream()
 assert(stream instanceof FS.WriteStream)
 ```
 
 ### #read()
 ```JS
-var path = FP.newPath(__filename)
+var path = FP.create(__filename)
 
 // #read() returns a promise object with #then() and #failure() methods.
 path.read().then(function (contents) {
   // Defaults to 'utf8' so you get a string here instead of a Buffer.
   assert(typeof contents === 'string')
 }).failure(console.error)
+
+// Or you can read a file *synchronously*:
+var readmeContents = path.read({sync: true})
+assert(typeof readmeContents === 'string')
 ```
 
 ### #write()
 ```JS
-var FS = require('fs')
-var path = FP.newPath('/tmp/new_file.txt')
+var path = FP.create('/tmp/new_file.txt')
 
 // #write() returns a promise object with #then() and #failure() methods.
+// Writes the file contents in 'utf8' by default.
 path.write('Hello world!\n').then(function (returnedPath) {
   assert(returnedPath === path)
-  // Writes the file contents in 'utf8' by default.
-  var content = FS.readFileSync(path.toString(), {encoding: 'utf8'})
-  assert(content === 'Hello world!\n')
+  assert(path.read({sync: true}) === 'Hello world!\n')
 }).failure(console.error)
+
+// Or you can write a file *synchronously*:
+var syncPath = FP.create('/tmp/new_file_sync.txt')
+syncPath.write('Overwrite with this text', {sync: true})
+assert(syncPath.read({sync: true}) === 'Hello world!\n')
 ```
 
 ### #copy()
 ```JS
-var FS = require('fs')
-var path = FP.newPath(__filename)
-var originalContent = FS.readFileSync(path.toString(), {encoding: 'utf8'})
+var path = FP.create(__filename)
+var originalContent = path.read({sync: true})
 
 // #copy() returns a promise object with #then() and #failure() methods.
 path.copy('/tmp/README.md').then(function (target) {
   // The callback value (`target`) is a new FilePath instance.
-  assert(target instanceof FP.FilePath)
   assert(target.toString() === '/tmp/README.md')
-  var targetContent = FS.readFileSync(target.toString(), {encoding: 'utf8'})
-  assert(targetContent === originalContent)
+  assert(target.read({sync: true}) === originalContent)
 }).failure(console.error)
+
+// Or you can copy a file *synchronously*:
+syncPath = FP.create(__dirname, 'package.json')
+originalSyncContent = syncPath.read({sync: true})
+syncTarget = syncPath.copy('/tmp/package.json')
+assert(syncTarget.toString() === '/tmp/package.json')
+assert(syncTarget.read({sync: true}) === originalSyncContent)
 ```
 
 ### .root()
@@ -210,7 +211,7 @@ assert(FP.home() === '/home/kris')
 
 Copyright and License
 ---------------------
-Copyright (c) 2013 by Kris Walker <kris@kixx.name> (http://www.kixx.name).
+Copyright (c) 2014 by Kris Walker <kris@kixx.name> (http://www.kixx.name).
 
 Unless otherwise indicated, all source code is licensed under the MIT license.
 See LICENSE for details.
