@@ -42,7 +42,7 @@ FilePath.prototype = {
     return PATH.extname(this.path);
   },
 
-  dirname: function dirname() {
+  dir: function dir() {
     var p = PATH.dirname(this.path);
     return FilePath.create(p);
   },
@@ -307,6 +307,9 @@ FilePath.prototype = {
     return this.path;
   }
 };
+
+// For backwards compatibility:
+FilePath.prototype.dirname = FilePath.prototype.dir;
 
 FilePath.create = function create() {
   var path, args

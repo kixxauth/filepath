@@ -50,17 +50,17 @@ exports["#extname() method"] = {
   }
 };
 
-exports["#dirname() method"] = {
+exports["#dir() method"] = {
   "creates a new FilePath object": function (test) {
     var path = FILEPATH.newPath(__filename)
-      , path2 = path.dirname()
+      , path2 = path.dir()
 
     test.notEqual(path, path2);
     return test.done();
   },
 
   "returns the directory name of the path": function (test) {
-    var path = FILEPATH.newPath(__filename).dirname()
+    var path = FILEPATH.newPath(__filename).dir()
     test.equal(path.toString(), __dirname);
     return test.done();
   }
