@@ -330,7 +330,6 @@ FilePath.root = function root() {
 };
 
 FilePath.home = function home() {
-  // This module is not really Windows ready, but this is how it might be done.
   var path = process.platform === 'win32' ? process.env.USERPROFILE : process.env.HOME
   return FilePath.create(path);
 };
