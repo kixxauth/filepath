@@ -1,5 +1,6 @@
 var FS = require('fs')
 
+  , TOOLS    = require('./tools')
   , FILEPATH = require('../index')
 
 
@@ -11,7 +12,7 @@ exports["#list() method"] = {
 
     test.ok(Array.isArray(ls), 'isArray')
     test.equal(typeof child.exists, 'function', 'child.exists()');
-    test.equal(child.toString(), __dirname +'/fixtures/foo');
+    test.equal(child.toString(), __dirname +TOOLS.platformString('/fixtures/foo'));
     return test.done();
   },
 
@@ -32,7 +33,7 @@ exports["#list() method"] = {
       path.list();
     } catch (err) {
       test.equal(err.code, "PATH_NO_EXIST", 'Error code');
-      test.equal(err.message, "Cannot list 'foo/bar'; it does not exist.", 'Error message');
+      test.equal(err.message, "Cannot list '"+ TOOLS.platformString('foo/bar') +"'; it does not exist.", 'Error message');
     }
     return test.done();
   }
@@ -42,15 +43,15 @@ exports["#mkdir() method"] = {
   setUp: function (done) {
     // Do the cleanup.
     try {
-      FS.rmdirSync('/tmp/filepath/testing/foo');
+      FS.rmdirSync(TOOLS.platformString('/tmp/filepath/testing/foo'));
     } catch (e) { }
 
     try {
-      FS.rmdirSync('/tmp/filepath/testing');
+      FS.rmdirSync(TOOLS.platformString('/tmp/filepath/testing'));
     } catch (e) { }
 
     try {
-      FS.rmdirSync('/tmp/filepath');
+      FS.rmdirSync(TOOLS.platformString('/tmp/filepath'));
     } catch (e) { }
 
     return done();

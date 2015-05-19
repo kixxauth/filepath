@@ -1,5 +1,6 @@
 var FS = require('fs')
 
+  , TOOLS      = require('./tools')
   , FILESTREAM = require('../index')
 
 
@@ -8,7 +9,7 @@ exports["#newReadStream() method"] = {
   "creates new ReadStream instance": function (test) {
     var stream = FILESTREAM.newPath(__filename).newReadStream()
     test.expect(1);
-    test.ok(stream instanceof FS.ReadStream);
+    test.ok(stream instanceof FS.ReadStream)
     stream.close(test.done);
     return;
   },
@@ -23,7 +24,7 @@ exports["#newReadStream() method"] = {
     });
 
     stream.on('end', function () {
-      test.strictEqual(buff, 'Zm9vPWJhcgo=');
+      test.strictEqual(buff, 'Zm9vPWJhcg0K')
       return test.done();
     })
 
@@ -35,7 +36,7 @@ exports["#newWriteStream() method"] = {
   setUp: function (done) {
     // Do the cleanup.
     try {
-      FS.unlinkSync('/tmp/test-writestream-file.txt');
+      FS.unlinkSync(TOOLS.platformString('/tmp/test-writestream-file.txt'))
     } catch (e) { }
 
     return done();
@@ -54,7 +55,7 @@ exports["#newWriteStream() method"] = {
     var stream
       , path = FILESTREAM.newPath('/tmp/test-writestream-file.txt')
 
-    test.strictEqual(path.exists(), false, 'path does not exist yet');
+    test.strictEqual(path.exists(), false, 'path does not exist yet')
 
     // Unlike Node.js, encoding defaults to 'utf8' (instead of null).
     stream = path.newWriteStream()

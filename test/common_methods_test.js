@@ -1,4 +1,5 @@
 var FILEPATH = require('../index')
+  , TOOLS    = require('./tools')
 
 
 exports["#split() method"] = {
@@ -102,14 +103,14 @@ exports["#append() method"] = {
     test.strictEqual(p1.toString(), 'foo', 'internal state');
 
     // A new path object has been created.
-    test.strictEqual(p2.toString(), 'foo/bar', 'new object');
+    test.strictEqual(p2.toString(), TOOLS.platformString('foo/bar'), 'new object');
 
     return test.done();
   },
 
   "can append multiple path parts": function (test) {
     var path = FILEPATH.newPath('foo').append('bar', 'baz');
-    test.strictEqual(path.toString(), 'foo/bar/baz');
+    test.strictEqual(path.toString(), TOOLS.platformString('foo/bar/baz'));
     return test.done();
   }
 };

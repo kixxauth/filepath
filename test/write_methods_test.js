@@ -1,5 +1,6 @@
-var FS = require('fs')
+var FS       = require('fs')
 
+  , TOOLS    = require('./tools')
   , FILEPATH = require('../index')
 
 
@@ -7,19 +8,19 @@ exports["#.write() method"] = {
   setUp: function (done) {
     // Do the cleanup.
     try {
-      FS.unlinkSync('/tmp/test-write-file.txt');
+      FS.unlinkSync(TOOLS.platformString('/tmp/test-write-file.txt'));
     } catch (e) { }
     try {
-      FS.unlinkSync('/tmp/test-write-file-sync.txt');
+      FS.unlinkSync(TOOLS.platformString('/tmp/test-write-file-sync.txt'));
     } catch (e) { }
     try {
-      FS.unlinkSync('/tmp/new-dir/test-write-file.txt');
+      FS.unlinkSync(TOOLS.platformString('/tmp/new-dir/test-write-file.txt'));
     } catch (e) { }
     try {
-      FS.unlinkSync('/tmp/new-dir/test-write-file-sync.txt');
+      FS.unlinkSync(TOOLS.platformString('/tmp/new-dir/test-write-file-sync.txt'));
     } catch (e) { }
     try {
-      FS.rmdirSync('/tmp/new-dir');
+      FS.rmdirSync(TOOLS.platformString('/tmp/new-dir'));
     } catch (e) { }
 
     return done();
@@ -124,10 +125,10 @@ exports["#copy() method"] = {
   setUp: function (done) {
     // Do the cleanup.
     try {
-      FS.unlinkSync('/tmp/copied-test.ini');
+      FS.unlinkSync(TOOLS.platformString('/tmp/copied-test.ini'));
     } catch (e) { }
     try {
-      FS.unlinkSync('/tmp/copied-test-sync.ini');
+      FS.unlinkSync(TOOLS.platformString('/tmp/copied-test-sync.ini'));
     } catch (e) { }
 
     return done();
@@ -142,13 +143,13 @@ exports["#copy() method"] = {
     test.strictEqual(target.exists(), false, 'path does not exist yet');
 
     function withNewPath(target) {
-      test.strictEqual(target.toString(), '/tmp/copied-test.ini');
+      test.strictEqual(target.toString(), TOOLS.platformString('/tmp/copied-test.ini'));
       test.ok(target.exists());
       return target.read().then(testContent);
     }
 
     function testContent(content) {
-      test.strictEqual(content, 'foo=bar\n');
+      test.strictEqual(content, TOOLS.platformLines('foo=bar\n'));
       return test.done();
     }
 
@@ -165,10 +166,10 @@ exports["#copy() method"] = {
     test.strictEqual(target.exists(), false, 'path does not exist yet');
 
     path.copy(target, {sync: true});
-    test.strictEqual(target.toString(), '/tmp/copied-test-sync.ini');
+    test.strictEqual(target.toString(), TOOLS.platformString('/tmp/copied-test-sync.ini'));
     test.ok(target.exists());
     var content = target.read({sync: true});
-    test.strictEqual(content, 'foo=bar\n');
+    test.strictEqual(content, TOOLS.platformLines('foo=bar\n'));
     test.done();
   }
 };

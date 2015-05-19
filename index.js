@@ -28,7 +28,10 @@ FilePath.prototype = {
   },
 
   split: function split() {
-    return this.path.split(PATH.sep).filter(FilePath.partsFilter);
+    return this.path
+      .replace(/\\/g, '/')
+      .split('/')
+      .filter(FilePath.partsFilter);
   },
 
   basename: function basename(ext) {
@@ -323,12 +326,11 @@ FilePath.create = function create() {
 };
 
 FilePath.root = function root() {
-  return FilePath.create('/');
+  return FilePath.create(process.platform === 'win32' ? '\\' : '/');
 };
 
 FilePath.home = function home() {
-  // This module is not really Windows ready, but this is how it might be
-  // done.
+  // This module is not really Windows ready, but this is how it might be done.
   var path = process.platform === 'win32' ? process.env.USERPROFILE : process.env.HOME
   return FilePath.create(path);
 };

@@ -1,4 +1,5 @@
 var FILEPATH = require('../index')
+  , TOOLS    = require('./tools')
 
 
 exports[".home() class method"] = {
@@ -14,7 +15,7 @@ exports[".root() class method"] = {
   "creates a FilePath object around the root directory": function (test) {
     var path = FILEPATH.root()
     test.equal(path.exists(), true, "root dir exists");
-    test.equal(path.toString(), '/', 'file root');
+    test.equal(path.toString(), TOOLS.platformString('/'), 'file root');
     return test.done();
   }
 }

@@ -1,22 +1,25 @@
 var FILEPATH = require('../index')
+  , PATH     = require('path')
+  , TOOLS    = require('./tools')
+
 
 exports["Create a new FilePath object"] = {
 
   "with a single path part": function (test) {
-    var path = FILEPATH.newPath('foo');
-    test.strictEqual(path.toString(), 'foo');
+    var path = FILEPATH.newPath('foo')
+    test.strictEqual(path.toString(), 'foo')
     return test.done();
   },
 
   "with multiple path parts": function (test) {
-    var path = FILEPATH.newPath('foo', 'bar', 'baz');
-    test.strictEqual(path.toString(), 'foo/bar/baz');
+    var path = FILEPATH.newPath('foo', 'bar', 'baz')
+    test.strictEqual(path.toString(), TOOLS.platformString('foo/bar/baz'))
     return test.done();
   },
 
   "with another FilePath object": function (test) {
-    var path = FILEPATH.newPath(FILEPATH.newPath('foo'));
-    test.strictEqual(path.toString(), 'foo');
+    var path = FILEPATH.newPath(FILEPATH.newPath('foo'))
+    test.strictEqual(path.toString(), TOOLS.platformString('foo'));
     return test.done();
   },
 
@@ -25,25 +28,25 @@ exports["Create a new FilePath object"] = {
       , fp2 = FILEPATH.newPath('baz')
       , path = FILEPATH.newPath(fp1, 'bar', fp2)
 
-    test.strictEqual(path.toString(), 'foo/bar/baz');
+    test.strictEqual(path.toString(), TOOLS.platformString('foo/bar/baz'))
     return test.done();
   },
 
   "defaults to current working directory": function (test) {
-    var path = FILEPATH.newPath();
-    test.strictEqual(path.toString(), process.cwd());
+    var path = FILEPATH.newPath()
+    test.strictEqual(path.toString(), process.cwd())
     return test.done();
   },
 
   "with undefined": function (test) {
-    var path = FILEPATH.newPath(undefined);
-    test.strictEqual(path.toString(), process.cwd());
+    var path = FILEPATH.newPath(undefined)
+    test.strictEqual(path.toString(), process.cwd())
     return test.done();
   },
 
   "with multiple void args": function (test) {
-    var path = FILEPATH.newPath(null, undefined);
-    test.strictEqual(path.toString(), process.cwd());
+    var path = FILEPATH.newPath(null, undefined)
+    test.strictEqual(path.toString(), process.cwd())
     return test.done();
   }
 };
@@ -57,7 +60,7 @@ exports["extendable prototype"] = {
     }
 
     var path = FILEPATH.newPath().foo()
-      , expected = process.cwd() + '/foo'
+      , expected = process.cwd() + PATH.sep + 'foo'
 
     test.strictEqual(path.toString(), expected)
     return test.done();

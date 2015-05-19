@@ -1,4 +1,5 @@
 var FILEPATH = require('../index')
+  , TOOLS    = require('./tools')
 
 
 exports["#read() method"] = {
@@ -43,7 +44,7 @@ exports["#read() method"] = {
     var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.ini')
 
     function testPlainText(rv) {
-      test.equal(rv, 'foo=bar\n', 'plain text');
+      test.equal(rv, TOOLS.platformLines('foo=bar\n'), 'plain text');
       return;
     }
 
@@ -58,7 +59,7 @@ exports["#read() method"] = {
     var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.ini')
 
     var rv = path.read({sync: true})
-    test.equal(rv, 'foo=bar\n', 'synchronous read');
+    test.equal(rv, TOOLS.platformLines('foo=bar\n'), 'synchronous read');
     test.done()
   },
 
