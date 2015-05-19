@@ -1,4 +1,5 @@
-var FILEPATH = require('../index')
+var PATH     = require('path')
+  , FILEPATH = require('../index')
   , TOOLS    = require('./tools')
 
 
@@ -87,6 +88,34 @@ exports["#resolve() method"] = {
   "resolves from current directory by default": function (test) {
     var path = FILEPATH.newPath('test/common_methods_test.js').resolve();
     test.strictEqual(path.toString(), __filename);
+    return test.done();
+  }
+};
+
+exports["#relative() method"] = {
+  "creates a new FilePath object": function (test) {
+    var path = FILEPATH.newPath()
+      , path2 = path.relative()
+
+    test.notEqual(path, path2);
+    return test.done();
+  },
+
+  "solves from absolute paths": function (test) {
+    var path = FILEPATH
+      .newPath(__dirname)
+      .relative(__filename);
+
+    test.strictEqual(path.toString(), PATH.basename(__filename));
+    return test.done();
+  },
+
+  "solves using cwd by default": function (test) {
+    var path = FILEPATH
+      .newPath(__dirname)
+      .relative();
+
+    test.strictEqual(path.toString(), '..');
     return test.done();
   }
 };

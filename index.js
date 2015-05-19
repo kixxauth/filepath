@@ -21,6 +21,11 @@ FilePath.prototype = {
     return FilePath.create(p);
   },
 
+  relative: function relative(to) {
+    to = typeof to === 'string' ? to : process.cwd();
+    return PATH.relative(this.path, to);
+  },
+
   append: function append() {
     // Join an arbitrary number of arguments.
     var args = [this.path].concat(slice.call(arguments))
