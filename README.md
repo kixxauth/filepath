@@ -1,26 +1,20 @@
 Filepath
 ========
 
-A little utility interface for working with the file system in Node.js programs.
+A cross platform interface for working with the file system in Node.js programs. Yes, it works with both posix and win32. So there.
+
+[![NPM](https://nodei.co/npm/filepath.png)](https://nodei.co/npm/filepath/)
+
+__Built by [@kixxauth](https://twitter.com/kixxauth)__
 
 ## Installation
-The most common use of Filepath is to use it as a library. In that case, just
-include it in your Node.js project by adding a line for Filepath in your
-`pacakge.json`. For more information about your `package.json` file, you should
-check out the npm documentation by running `npm help json`.
+The most common use of Filepath is to use it as a library. In that case, just include it in your Node.js project by adding a line for "filepath" in your `pacakge.json` dependencies. For more information about your `package.json` file, you should check out the npm documentation by running `npm help json`.
 
 Alternatively, you can quickly install Filepath for use in a project by running
 
 	npm install filepath
 
 which will install filepath in your `node_modules/` folder.
-
-## Testing
-To run the tests, just do
-
-  npm test
-
-You should see the test results output.
 
 API Quick Reference
 -------------------
@@ -32,20 +26,39 @@ var FP = require('filepath')
 
 ### Create a new FilePath object
 ```JS
+// FilePath.create just takes a string to create a new path object:
 var path = FP.create(__filname)
 assert(path instanceof FP.FilePath)
 
-// The 'path' property is the string representation of the FilePath instance.
-assert(path.toString() === path.path)
+// It's important to remember that a FilePath instance is *not* a String.
+// The 'path' property of a FilePath instance is the string representation
+// of the FilePath instance, which is the same thing as calling .toString().
+assert(path.path === path.toString())
 
-// Defaults to current working directory:
+// Defaults to current working directory if you don't pass any arguments:
 var path = FP.create()
 assert(path.toString() === process.cwd())
 
-// Joins multiple parts from arguments:
+// Joins multiple arguments into a single path object:
 var path = FP.create(__dirname, 'foo')
 assert(path.toString() === __dirname + '/foo')
 ```
+
+### Class Methods
+
+### .root()
+```JS
+// Handy shortcut class method.
+assert(FP.root().toString() === '/')
+```
+
+### .home()
+```JS
+// Another handy shortcut class method.
+assert(FP.home().toString() === '/home/kris')
+```
+
+### Instance Methods
 
 ### #append()
 ```JS
@@ -55,34 +68,43 @@ assert(path.toString() === __dirname + '/foo/bar/baz')
 
 ### #resolve()
 ```JS
-var path = FP.create(__dirname, 'lib').resolve('../README.md')
-assert(path.toString() === __filename)
+var path = FP.create('/home/kris/filepath', 'lib').resolve('../README.md')
+assert(path.toString() === '/home/kris/filepath/README.md')
 ```
 
-### #dirname()
+### #relative()
 ```JS
-var path = FP.create(__filename).dirname()
-assert(path.toString() === __dirname)
+var path = FP.create('/home/kris/filepath/lib')
+  .relative('/home/kris/filepath/test');
+assert(path.toString() === '../test')
+```
+
+### #dir()
+```JS
+var path = FP.create('/home/kris/filepath').dir();
+assert(path.toString() === '/home/kris')
 ```
 
 ### #basename()
 ```JS
-var path = FP.create(__filename).basename()
-assert(path.toString() === 'README.md')
+var path = FP.create('/home/kris/filepath/README.md').basename();
+// Note that basename() returns a *String*
+assert(path === 'README.md')
 ```
 
 ### #extname()
 ```JS
-var ext = FP.create(__filename).extname()
+var ext = FP.create('/home/kris/filepath/README.md').extname()
+// Note that extname() returns a *String*
 assert(ext === '.md')
 ```
 
 ### #split()
 ```JS
-var parts = FP.create(__dirname).split()
+var parts = FP.create('/home/kris/filepath/README.md').split()
 assert(Array.isArray(parts))
-assert(parts.shift() === 'home')
-assert(parts.pop() === 'filepath')
+assert(parts[0] === 'home')
+assert(parts.pop() === 'README.md')
 ```
 
 ### #exists()
@@ -107,9 +129,10 @@ assert(path.isDirectory())
 ### #list()
 ```JS
 var li = FP.create(__dirname).list()
+// Listing a directory returns an Array of fully resolved FilePath instances
 assert(Array.isArray(li))
-var readme = li[9]
-assert(readme instanceof FP.FilePath)
+assert(li[4] instanceof FP.FilePath)
+assert(li[4].toString() === '/home/kris/filepath/README.md')
 ```
 
 ### #recurse()
@@ -196,17 +219,12 @@ assert(syncTarget.toString() === '/tmp/package.json')
 assert(syncTarget.read({sync: true}) === originalSyncContent)
 ```
 
-### .root()
-```JS
-// Handy shortcut class method.
-assert(FP.root() === '/')
-```
+## Testing
+To run the tests, just do
 
-### .home()
-```JS
-// Another handy shortcut class method.
-assert(FP.home() === '/home/kris')
-```
+  npm test
+
+You should see the test results output.
 
 
 Copyright and License
