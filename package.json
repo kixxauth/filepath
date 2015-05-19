@@ -1,15 +1,18 @@
 {
-    "name": "filepath",
-    "version": "0.8.1",
-    "description": "A little utility interface for working with the filesystem in Node.js.",
-    "author": "Kris Walker <kris@kixx.name> (http://www.kixx.name/)",
-    "keywords": ["filepath", "files","directories","file", "system","filesystem","path"],
-    "repository": {"type":"git", "url":"https://github.com/kixxauth/filepath.git"},
-    "bugs": "https://github.com/kixxauth/filepath/issues",
+    "name"        : "filepath",
+    "version"     : "0.8.1",
+    "description" : "A cross platform utility interface for working with filesystems in Node.js.",
+    "author"      : "Kris Walker <kris@kixx.name> (http://www.kixx.name/)",
+    "repository"  : {"type":"git", "url":"https://github.com/kixxauth/filepath.git"},
+    "bugs"        : "https://github.com/kixxauth/filepath/issues",
     "dependencies": {
-        "iou": "2.1.0"
+        "iou": "~2.1.0"
     },
     "devDependencies": {
-        "nodeunit": "0.9.0"
-    }
+        "nodeunit": "~0.9.1"
+    },
+    "scripts": {
+        "test": "node bin/run_tests.js test/"
+    },
+    "keywords": ["filepath", "files","directories","file", "system","filesystem","path"]
 }
