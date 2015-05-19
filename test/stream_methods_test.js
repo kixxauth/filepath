@@ -24,7 +24,8 @@ exports["#newReadStream() method"] = {
     });
 
     stream.on('end', function () {
-      test.strictEqual(buff, 'Zm9vPWJhcg0K')
+      var expected = process.platform === 'win32' ? 'Zm9vPWJhcg0K' : 'Zm9vPWJhcgo='
+      test.strictEqual(buff, expected)
       return test.done();
     })
 
