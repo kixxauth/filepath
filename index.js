@@ -35,8 +35,7 @@ FilePath.prototype = {
   },
 
   basename: function basename(ext) {
-    var p = PATH.basename(this.path, ext);
-    return FilePath.create(p);
+    return PATH.basename(this.path, ext);
   },
 
   extname: function extname() {
@@ -329,7 +328,7 @@ FilePath.create = function create() {
     }
   }
 
-  return new FilePath(path.toString());
+  return new FilePath(PATH.resolve(path.toString()));
 };
 
 FilePath.root = function root() {

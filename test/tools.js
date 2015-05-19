@@ -3,7 +3,8 @@ var PATH = require('path')
 
 exports.platformString = function (str) {
   var parts = str.split('/')
-  return parts.join(PATH.sep);
+    , path  = parts.join(PATH.sep)
+  return PATH.resolve(path);
 };
 
 exports.platformLines = function (str) {

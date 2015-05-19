@@ -7,7 +7,7 @@ exports["Create a new FilePath object"] = {
 
   "with a single path part": function (test) {
     var path = FILEPATH.newPath('foo')
-    test.strictEqual(path.toString(), 'foo')
+    test.strictEqual(path.toString(), TOOLS.platformString('foo'))
     return test.done();
   },
 
@@ -20,15 +20,6 @@ exports["Create a new FilePath object"] = {
   "with another FilePath object": function (test) {
     var path = FILEPATH.newPath(FILEPATH.newPath('foo'))
     test.strictEqual(path.toString(), TOOLS.platformString('foo'));
-    return test.done();
-  },
-
-  "with multiple FilePath objects": function (test) {
-    var fp1 = FILEPATH.newPath('foo')
-      , fp2 = FILEPATH.newPath('baz')
-      , path = FILEPATH.newPath(fp1, 'bar', fp2)
-
-    test.strictEqual(path.toString(), TOOLS.platformString('foo/bar/baz'))
     return test.done();
   },
 
@@ -47,6 +38,12 @@ exports["Create a new FilePath object"] = {
   "with multiple void args": function (test) {
     var path = FILEPATH.newPath(null, undefined)
     test.strictEqual(path.toString(), process.cwd())
+    return test.done();
+  },
+
+  "with relative path string": function (test) {
+    var path = FILEPATH.newPath('./foo')
+    test.strictEqual(path.toString(), process.cwd() + PATH.sep + 'foo')
     return test.done();
   }
 };

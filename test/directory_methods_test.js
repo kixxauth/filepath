@@ -1,4 +1,5 @@
-var FS = require('fs')
+var FS   = require('fs')
+  , PATH = require('path')
 
   , TOOLS    = require('./tools')
   , FILEPATH = require('../index')
@@ -12,7 +13,7 @@ exports["#list() method"] = {
 
     test.ok(Array.isArray(ls), 'isArray')
     test.equal(typeof child.exists, 'function', 'child.exists()');
-    test.equal(child.toString(), __dirname +TOOLS.platformString('/fixtures/foo'));
+    test.equal(child.toString(), __dirname + PATH.sep +'fixtures'+ PATH.sep +'foo');
     return test.done();
   },
 

@@ -16,6 +16,11 @@ exports["#split() method"] = {
     var path = FILEPATH.newPath('/foo//bar/baz/')
       , parts = path.split()
 
+    if (process.platform === 'win32') {
+      // shift off the 'C:'
+      parts.shift();
+    }
+
     test.equal(parts.length, 3, 'length');
     test.equal(parts.shift(), 'foo', '.shift()');
     test.equal(parts.pop(), 'baz', '.pop()');
@@ -24,23 +29,15 @@ exports["#split() method"] = {
 }
 
 exports["#basename() method"] = {
-  "creates a new FilePath object": function (test) {
-    var path = FILEPATH.newPath(__filename)
-      , path2 = path.basename()
-
-    test.notEqual(path, path2);
-    return test.done();
-  },
-
   "returns the basename of the path": function (test) {
     var path = FILEPATH.newPath(__filename).basename()
-    test.equal(path.toString(), 'common_methods_test.js');
+    test.equal(path, 'common_methods_test.js');
     return test.done();
   },
 
   "can slice off the extension": function (test) {
     var path = FILEPATH.newPath(__filename).basename('.js')
-    test.equal(path.toString(), 'common_methods_test');
+    test.equal(path, 'common_methods_test');
     return test.done();
   }
 };
@@ -100,7 +97,7 @@ exports["#append() method"] = {
       , p2 = p1.append('bar')
 
     // Internal state is not changed.
-    test.strictEqual(p1.toString(), 'foo', 'internal state');
+    test.strictEqual(p1.toString(), TOOLS.platformString('foo'), 'internal state');
 
     // A new path object has been created.
     test.strictEqual(p2.toString(), TOOLS.platformString('foo/bar'), 'new object');
