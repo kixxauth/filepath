@@ -6,23 +6,11 @@ var FS       = require('fs')
 
 exports["#.write() method"] = {
   setUp: function (done) {
-    // Do the cleanup.
-    try {
-      FS.unlinkSync(TOOLS.platformString('/tmp/test-write-file.txt'));
-    } catch (e) { }
-    try {
-      FS.unlinkSync(TOOLS.platformString('/tmp/test-write-file-sync.txt'));
-    } catch (e) { }
-    try {
-      FS.unlinkSync(TOOLS.platformString('/tmp/new-dir/test-write-file.txt'));
-    } catch (e) { }
-    try {
-      FS.unlinkSync(TOOLS.platformString('/tmp/new-dir/test-write-file-sync.txt'));
-    } catch (e) { }
-    try {
-      FS.rmdirSync(TOOLS.platformString('/tmp/new-dir'));
-    } catch (e) { }
-
+    FILEPATH.newPath('/tmp/test-write-file.txt').remove();
+    FILEPATH.newPath('/tmp/test-write-file-sync.txt').remove();
+    FILEPATH.newPath('/tmp/new-dir/test-write-file.txt').remove();
+    FILEPATH.newPath('/tmp/new-dir/test-write-file-sync.txt').remove();
+    FILEPATH.newPath('/tmp/new-dir').remove();
     return done();
   },
 
@@ -123,14 +111,8 @@ exports["#.write() method"] = {
 
 exports["#copy() method"] = {
   setUp: function (done) {
-    // Do the cleanup.
-    try {
-      FS.unlinkSync(TOOLS.platformString('/tmp/copied-test.ini'));
-    } catch (e) { }
-    try {
-      FS.unlinkSync(TOOLS.platformString('/tmp/copied-test-sync.ini'));
-    } catch (e) { }
-
+    FILEPATH.newPath('/tmp/copied-test.ini').remove();
+    FILEPATH.newPath('/tmp/copied-test-sync.ini').remove();
     return done();
   },
 

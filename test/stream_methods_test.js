@@ -1,13 +1,13 @@
 var FS = require('fs')
 
-  , TOOLS      = require('./tools')
-  , FILESTREAM = require('../index')
+  , TOOLS    = require('./tools')
+  , FILEPATH = require('../index')
 
 
 exports["#newReadStream() method"] = {
 
   "creates new ReadStream instance": function (test) {
-    var stream = FILESTREAM.newPath(__filename).newReadStream()
+    var stream = FILEPATH.newPath(__filename).newReadStream()
     test.expect(1);
     test.ok(stream instanceof FS.ReadStream)
     stream.close(test.done);
@@ -15,7 +15,7 @@ exports["#newReadStream() method"] = {
   },
 
   "with options": function (test) {
-    var path = FILESTREAM.newPath(__dirname, 'fixtures', 'test.ini')
+    var path = FILEPATH.newPath(__dirname, 'fixtures', 'test.ini')
       , buff = ''
       , stream = path.newReadStream({encoding: 'base64'})
 
@@ -34,16 +34,12 @@ exports["#newReadStream() method"] = {
 
 exports["#newWriteStream() method"] = {
   setUp: function (done) {
-    // Do the cleanup.
-    try {
-      FS.unlinkSync(TOOLS.platformString('/tmp/test-writestream-file.txt'))
-    } catch (e) { }
-
+    FILEPATH.newPath('/tmp/test-writestream-file.txt').remove();
     return done();
   },
 
   "creates a new WriteStream instance": function (test) {
-    var stream = FILESTREAM.newPath('/tmp/test-writestream-file.txt').newWriteStream()
+    var stream = FILEPATH.newPath('/tmp/test-writestream-file.txt').newWriteStream()
     test.expect(1);
     test.ok(stream instanceof FS.WriteStream);
     stream.close(test.done);
@@ -53,7 +49,7 @@ exports["#newWriteStream() method"] = {
   "with options": function (test) {
     test.expect(2);
     var stream
-      , path = FILESTREAM.newPath('/tmp/test-writestream-file.txt')
+      , path = FILEPATH.newPath('/tmp/test-writestream-file.txt')
 
     test.strictEqual(path.exists(), false, 'path does not exist yet')
 
