@@ -1,9 +1,8 @@
-var FS = require('fs')
+var FS   = require('fs')
   , PATH = require('path')
 
   , Promise = require('iou').Promise
-
-  , slice = Array.prototype.slice
+  , slice   = Array.prototype.slice
 
 
 function FilePath(path) {
@@ -348,6 +347,6 @@ FilePath.partsFilter = function partsFilter(part) {
 
 
 exports.FilePath = FilePath;
-exports.create = exports.newPath = FilePath.create;
-exports.root = FilePath.root;
-exports.home = FilePath.home;
+exports.create   = exports.newPath = FilePath.create;
+exports.root     = FilePath.root;
+exports.home     = FilePath.home;
