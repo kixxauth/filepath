@@ -5,6 +5,13 @@ var FS   = require('fs')
   , slice   = Array.prototype.slice
 
 
+function FilePathError(message) {
+  this.name = 'FilePathError';
+  this.message = message;
+}
+
+FilePathError.prototype = new Error();
+
 function FilePath(path) {
   this.path = path;
 };
@@ -106,7 +113,7 @@ FilePath.prototype = {
         if (err.code === 'ENOENT') {
           return null;
         } else if (err.code === 'EISDIR') {
-          err = new Error("Cannot read '"+ self.path +"'; it is a directory.");
+          err = new FilePathError("Cannot read '"+ self.path +"'; it is a directory.");
           err.code = "PATH_IS_DIRECTORY";
           throw err;
         }
@@ -153,7 +160,7 @@ FilePath.prototype = {
         if (err.code === 'ENOENT') {
           return null;
         } else if (err.code === 'EISDIR') {
-          err = new Error("Cannot write to '"+ self.path +"'; it is a directory.");
+          err = new FilePathError("Cannot write to '"+ self.path +"'; it is a directory.");
           err.code = "PATH_IS_DIRECTORY";
           throw err;
         }
@@ -176,7 +183,7 @@ FilePath.prototype = {
         if (err && err.code === 'ENOENT') {
           return resolve(null);
         } else if (err && err.code === 'EISDIR') {
-          e = new Error("Cannot write to '"+ self.path +"'; it is a directory.");
+          e = new FilePathError("Cannot write to '"+ self.path +"'; it is a directory.");
           e.code = "PATH_IS_DIRECTORY";
           return reject(e);
         } else if (err) {
@@ -228,7 +235,7 @@ FilePath.prototype = {
 
   require: function path_require(contextualRequire) {
     if (typeof contextualRequire !== 'function') {
-      var err = new Error("Must pass a require function to #require().");
+      var err = new FilePathError("Must pass a require function to #require().");
       err.code = 'NO_REQUIRE_CONTEXT';
       throw err;
     }
@@ -241,10 +248,10 @@ FilePath.prototype = {
     } catch (err) {
       var e;
       if (err.code === 'ENOTDIR') {
-        e = new Error("Cannot list '"+ this.path +"'; it is a file.");
+        e = new FilePathError("Cannot list '"+ this.path +"'; it is a file.");
         e.code = "PATH_IS_FILE";
       } else if (err.code === 'ENOENT') {
-        e = new Error("Cannot list '"+ this.path +"'; it does not exist.");
+        e = new FilePathError("Cannot list '"+ this.path +"'; it does not exist.");
         e.code = "PATH_NO_EXIST";
       }
 
@@ -269,7 +276,7 @@ FilePath.prototype = {
       fullpath = fullpath.append(part);
       if (fullpath.exists()) {
         if (fullpath.isDirectory()) return fullpath;
-        var e = new Error("Cannot create directory '"+ _this.path +"'; it is a file.");
+        var e = new FilePathError("Cannot create directory '"+ _this.path +"'; it is a file.");
         e.code = "PATH_IS_FILE";
         throw e;
       }
