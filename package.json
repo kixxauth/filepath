@@ -12,7 +12,7 @@
     "bluebird": "2.10.2"
   },
   "devDependencies": {
-    "nodeunit": "~0.9.1"
+    "nodeunit": "0.9.1"
   },
   "scripts": {
     "test": "node bin/run_tests.js test/"
