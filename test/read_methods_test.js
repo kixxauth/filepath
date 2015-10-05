@@ -26,10 +26,11 @@ exports["#read() method"] = {
       return;
     }
 
-    test.expect(2);
+    test.expect(3);
     function onFailure(err) {
-      test.equal(err.code, "PATH_IS_DIRECTORY", 'Error code');
-      test.equal(err.message, "Cannot read '"+ __dirname +"'; it is a directory.", 'Error message');
+      test.equal(err.name, "FilePathError", 'FilePathError');
+      test.equal(err.code, "PATH_IS_DIRECTORY", 'FilePathError code');
+      test.equal(err.message, "Cannot read '"+ __dirname +"'; it is a directory.", 'FilePathError message');
       return;
     }
 
@@ -73,14 +74,15 @@ exports["#read() method"] = {
   },
 
   "synchronously throws when a path is a directory": function (test) {
-    test.expect(2);
+    test.expect(3);
     var path = FILEPATH.newPath(__dirname)
 
     try {
       path.read({sync: true});
     } catch (err) {
-      test.equal(err.code, "PATH_IS_DIRECTORY", 'sync Error code');
-      test.equal(err.message, "Cannot read '"+ __dirname +"'; it is a directory.", 'sync Error message');
+      test.equal(err.name, 'FilePathError', 'sync FilePathError')
+      test.equal(err.code, "PATH_IS_DIRECTORY", 'sync FilePathError code');
+      test.equal(err.message, "Cannot read '"+ __dirname +"'; it is a directory.", 'sync FilePathError message');
     }
 
     test.done();

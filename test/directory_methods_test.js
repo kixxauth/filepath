@@ -22,8 +22,9 @@ exports["#list() method"] = {
     try {
       path.list();
     } catch (err) {
-      test.equal(err.code, "PATH_IS_FILE", 'Error code');
-      test.equal(err.message, "Cannot list '"+ __filename +"'; it is a file.", 'Error message');
+      test.equal(err.name, 'FilePathError', 'FilePathError');
+      test.equal(err.code, "PATH_IS_FILE", 'FilePathError code');
+      test.equal(err.message, "Cannot list '"+ __filename +"'; it is a file.", 'FilePathError message');
     }
     return test.done();
   },
@@ -33,8 +34,9 @@ exports["#list() method"] = {
     try {
       path.list();
     } catch (err) {
-      test.equal(err.code, "PATH_NO_EXIST", 'Error code');
-      test.equal(err.message, "Cannot list '"+ TOOLS.platformString('foo/bar') +"'; it does not exist.", 'Error message');
+      test.equal(err.name, 'FilePathError', 'FilePathError');
+      test.equal(err.code, "PATH_NO_EXIST", 'FilePathError code');
+      test.equal(err.message, "Cannot list '"+ TOOLS.platformString('foo/bar') +"'; it does not exist.", 'FilePathError message');
     }
     return test.done();
   }
@@ -77,8 +79,9 @@ exports["#mkdir() method"] = {
     try {
       path.mkdir();
     } catch (e) {
-      test.equal(e.code, 'PATH_IS_FILE', 'e.code');
-      test.equal(e.message, "Cannot create directory '"+ path +"'; it is a file.", 'e.message');
+      test.equal(e.name, 'FilePathError', 'FilePathError');
+      test.equal(e.code, 'PATH_IS_FILE', 'FilePathError code');
+      test.equal(e.message, "Cannot create directory '"+ path +"'; it is a file.", 'FilePathError message');
     }
 
     return test.done();
