@@ -1,4 +1,5 @@
-var FS   = require('fs')
+var UTIL = require('util')
+  , FS   = require('fs')
   , PATH = require('path')
 
   , Promise = require('iou').Promise
@@ -6,11 +7,12 @@ var FS   = require('fs')
 
 
 function FilePathError(message) {
-  this.name = 'FilePathError';
+  Error.call(this);
+  Error.captureStackTrace(this, this.constructor);
+  this.name = this.constructor.name;
   this.message = message;
 }
-
-FilePathError.prototype = new Error();
+UTIL.inherits(FilePathError, Error);
 
 function FilePath(path) {
   this.path = path;
@@ -368,7 +370,8 @@ FilePath.partsFilter = function partsFilter(part) {
 };
 
 
-exports.FilePath = FilePath;
-exports.create   = exports.newPath = FilePath.create;
-exports.root     = FilePath.root;
-exports.home     = FilePath.home;
+exports.FilePath      = FilePath;
+exports.create        = exports.newPath = FilePath.create;
+exports.root          = FilePath.root;
+exports.home          = FilePath.home;
+exports.FilePathError = FilePathError;
