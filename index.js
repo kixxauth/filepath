@@ -2,7 +2,7 @@ var UTIL = require('util')
   , FS   = require('fs')
   , PATH = require('path')
 
-  , Promise = require('iou').Promise
+  , Promise = require('bluebird')
   , slice   = Array.prototype.slice
 
 
