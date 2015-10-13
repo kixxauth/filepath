@@ -3,6 +3,10 @@
   "version"     : "1.0.0",
   "description" : "A cross platform utility interface for working with filesystems in Node.js.",
   "author"      : "Kris Walker <kris@kixx.name> (http://www.kixx.name/)",
+  "scripts": {
+    "lint": "node bin/run_linter.js",
+    "test": "node bin/run_tests.js test/"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/kixxauth/filepath.git"
@@ -14,9 +18,6 @@
   "devDependencies": {
     "nodeunit" : "0.9.1",
     "xo"       : "^0.9.0"
-  },
-  "scripts": {
-    "test": "node bin/run_tests.js test/"
   },
   "keywords": [
     "filepath",
