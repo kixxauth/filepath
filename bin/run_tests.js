@@ -1,27 +1,26 @@
-var NFS = require('fs')
-	, NPATH = require('path')
+var NFS = require('fs');
+var NPATH = require('path');
 
-	, NODEUNIT = require('nodeunit')
+var NODEUNIT = require('nodeunit');
 
-	, testPath = NPATH.resolve(process.argv[2])
-	, fileMatcher = /test\.js$/
-	, files
-
+var testPath = NPATH.resolve(process.argv[2]);
+var fileMatcher = /test\.js$/;
+var files;
 
 function readTree(dir) {
-	var collection = []
-		, list = NFS.readdirSync(dir)
+	var collection = [];
+	var list = NFS.readdirSync(dir);
 
 	list.forEach(function (item) {
-		var filepath = NPATH.join(dir, item)
-			, stats = NFS.statSync(filepath)
+		var filepath = NPATH.join(dir, item);
+		var stats = NFS.statSync(filepath);
 
 		if (stats.isDirectory()) {
-			collection = collection.concat(readTree(filepath))
+			collection = collection.concat(readTree(filepath));
 		} else if (stats.isFile() && fileMatcher.test(filepath)) {
 			collection.push(NPATH.relative(process.cwd(), filepath));
 		}
-	})
+	});
 
 	return collection;
 }

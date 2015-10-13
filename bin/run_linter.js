@@ -1,20 +1,16 @@
 #!/usr/bin/env node
 'use strict';
 
-var
-CP       = require('child_process'),
-FilePath = require('../').FilePath,
-Promise  = require('bluebird');
+var CP = require('child_process');
+var FilePath = require('../').FilePath;
+var Promise = require('bluebird');
 
 exports.main = function () {
 	console.log(' ### running lint_runner ###');
-
-	var
-	execFile = process.platform === 'win32' ? 'xo.cmd' : 'xo';
+	var execFile = process.platform === 'win32' ? 'xo.cmd' : 'xo';
 	return new Promise(function (resolve, reject) {
-		var
-		exec = FilePath.create().append('node_modules', '.bin', execFile),
-		proc = CP.spawn(exec.toString());
+		var exec = FilePath.create().append('node_modules', '.bin', execFile);
+		var proc = CP.spawn(exec.toString());
 		proc.stdout.pipe(process.stdout);
 		proc.stderr.pipe(process.stderr);
 		proc.on('close', function (code) {
@@ -25,7 +21,6 @@ exports.main = function () {
 		});
 	});
 };
-
 
 if (require.main === module) {
 	exports.main()
