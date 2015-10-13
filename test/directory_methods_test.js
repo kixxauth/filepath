@@ -1,49 +1,47 @@
-var FS   = require('fs')
-	, PATH = require('path')
+var FS = require('fs');
+var PATH = require('path');
+var TOOLS = require('./tools');
+var FILEPATH = require('../index');
 
-	, TOOLS    = require('./tools')
-	, FILEPATH = require('../index')
+exports['#list() method'] = {
+	'returns Array of FilePath objects': function (test) {
+		var path = FILEPATH.newPath(__dirname, 'fixtures');
+		var ls = path.list();
+		var child = ls[0];
 
-
-exports["#list() method"] = {
-	"returns Array of FilePath objects": function (test) {
-		var path = FILEPATH.newPath(__dirname, 'fixtures')
-			, ls = path.list()
-			, child = ls[0]
-
-		test.ok(Array.isArray(ls), 'isArray')
+		test.ok(Array.isArray(ls), 'isArray');
 		test.equal(typeof child.exists, 'function', 'child.exists()');
-		test.equal(child.toString(), __dirname + PATH.sep +'fixtures'+ PATH.sep +'foo');
+		test.equal(child.toString(), PATH.join(__dirname, 'fixtures', 'foo'));
 		return test.done();
 	},
 
-	"when not a directory": function (test) {
-		var path = FILEPATH.newPath(__filename)
+	'when not a directory': function (test) {
+		var path = FILEPATH.newPath(__filename);
 		try {
 			path.list();
 		} catch (err) {
 			test.equal(err.name, 'FilePathError', 'FilePathError');
-			test.equal(err.code, "PATH_IS_FILE", 'FilePathError code');
-			test.equal(err.message, "Cannot list '"+ __filename +"'; it is a file.", 'FilePathError message');
+			test.equal(err.code, 'PATH_IS_FILE', 'FilePathError code');
+			test.ok(/Cannot list ([.]+) it is a file/.test(err.message), 'FilePathError message');
 		}
 		return test.done();
 	},
 
-	"when path does not exist": function (test) {
-		var path = FILEPATH.newPath('foo', 'bar')
+	'when path does not exist': function (test) {
+		var path = FILEPATH.newPath('foo', 'bar');
 		try {
 			path.list();
 		} catch (err) {
 			test.equal(err.name, 'FilePathError', 'FilePathError');
-			test.equal(err.code, "PATH_NO_EXIST", 'FilePathError code');
-			test.equal(err.message, "Cannot list '"+ TOOLS.platformString('foo/bar') +"'; it does not exist.", 'FilePathError message');
+			test.equal(err.code, 'PATH_NO_EXIST', 'FilePathError code');
+			test.ok(/Cannot list ([.]+) it does not exist/.test(err.message), 'FilePathError message');
 		}
 		return test.done();
 	}
 };
 
-exports["#mkdir() method"] = {
-	setUp: function (done) {
+exports['#mkdir() method'] = {
+	'setUp': function (done) {
 		// Do the cleanup.
 		try {
 			FS.rmdirSync(TOOLS.platformString('/tmp/filepath/testing/foo'));
@@ -60,7 +58,7 @@ exports["#mkdir() method"] = {
 		return done();
 	},
 
-	"can create a new, deep, path": function (test) {
+	'can create a new, deep, path': function (test) {
 		var path = FILEPATH.newPath('/tmp/filepath/testing/foo');
 
 		// The path does not exist yet.
@@ -73,15 +71,15 @@ exports["#mkdir() method"] = {
 		return test.done();
 	},
 
-	"throws if a filepath is given": function (test) {
-		var path = FILEPATH.newPath(__filename)
+	'throws if a filepath is given': function (test) {
+		var path = FILEPATH.newPath(__filename);
 
 		try {
 			path.mkdir();
-		} catch (e) {
-			test.equal(e.name, 'FilePathError', 'FilePathError');
-			test.equal(e.code, 'PATH_IS_FILE', 'FilePathError code');
-			test.equal(e.message, "Cannot create directory '"+ path +"'; it is a file.", 'FilePathError message');
+		} catch (err) {
+			test.equal(err.name, 'FilePathError', 'FilePathError');
+			test.equal(err.code, 'PATH_IS_FILE', 'FilePathError code');
+			test.ok(/Cannot list ([.]+) it is a file/.test(err.message), 'FilePathError message');
 		}
 
 		return test.done();
@@ -89,18 +87,18 @@ exports["#mkdir() method"] = {
 
 };
 
-exports["#recurse() method"] = {
-	"recurses deeply in to a directory tree": function (test) {
-		var path = FILEPATH.newPath(__dirname, 'fixtures')
-			, resolved = path.resolve()
-			, count = 0
-			, results = [
-						resolved.append('foo').toString()
-					, resolved.append('foo', '.gitkeep').toString()
-					, resolved.append('js_module.js').toString()
-					, resolved.append('test.ini').toString()
-					, resolved.append('test.json').toString()
-				]
+exports['#recurse() method'] = {
+	'recurses deeply in to a directory tree': function (test) {
+		var path = FILEPATH.newPath(__dirname, 'fixtures');
+		var resolved = path.resolve();
+		var count = 0;
+		var results = [
+			resolved.append('foo').toString(),
+			resolved.append('foo', '.gitkeep').toString(),
+			resolved.append('js_module.js').toString(),
+			resolved.append('test.ini').toString(),
+			resolved.append('test.json').toString()
+		];
 
 		test.expect(5);
 		path.recurse(function (node) {
@@ -111,7 +109,7 @@ exports["#recurse() method"] = {
 		return test.done();
 	},
 
-	"returns the file if called on a file": function (test) {
+	'returns the file if called on a file': function (test) {
 		var path = FILEPATH.newPath(__filename);
 		test.expect(1);
 
