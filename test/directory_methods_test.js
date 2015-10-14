@@ -22,7 +22,8 @@ exports['#list() method'] = {
 		} catch (err) {
 			test.equal(err.name, 'FilePathError', 'FilePathError');
 			test.equal(err.code, 'PATH_IS_FILE', 'FilePathError code');
-			test.ok(/Cannot list ([.]+) it is a file/.test(err.message), 'FilePathError message');
+			test.ok(/^Cannot list/.test(err.message), 'FilePathError message');
+			test.ok(/it is a file.$/.test(err.message), 'FilePathError message');
 		}
 		return test.done();
 	},
@@ -34,7 +35,8 @@ exports['#list() method'] = {
 		} catch (err) {
 			test.equal(err.name, 'FilePathError', 'FilePathError');
 			test.equal(err.code, 'PATH_NO_EXIST', 'FilePathError code');
-			test.ok(/Cannot list ([.]+) it does not exist/.test(err.message), 'FilePathError message');
+			test.ok(/^Cannot list/.test(err.message), 'FilePathError message');
+			test.ok(/it does not exist.$/.test(err.message), 'FilePathError message');
 		}
 		return test.done();
 	}
@@ -74,12 +76,14 @@ exports['#mkdir() method'] = {
 	'throws if a filepath is given': function (test) {
 		var path = FILEPATH.newPath(__filename);
 
+		test.expect(4);
 		try {
 			path.mkdir();
 		} catch (err) {
 			test.equal(err.name, 'FilePathError', 'FilePathError');
 			test.equal(err.code, 'PATH_IS_FILE', 'FilePathError code');
-			test.ok(/Cannot list ([.]+) it is a file/.test(err.message), 'FilePathError message');
+			test.ok(/^Cannot create directory/.test(err.message), 'FilePathError message');
+			test.ok(/it is a file.$/.test(err.message), 'FilePathError message');
 		}
 
 		return test.done();

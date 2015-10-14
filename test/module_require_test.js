@@ -29,7 +29,7 @@ exports['#require() method'] = {
 			path.require(require);
 		} catch (err) {
 			test.equal(err.code, 'MODULE_NOT_FOUND');
-			test.equal(err.message, 'Cannot find module "' + path.toString() + '"');
+			test.equal(err.message, 'Cannot find module \'' + path.toString() + '\'');
 		}
 		return test.done();
 	}

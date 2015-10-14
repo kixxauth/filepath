@@ -80,11 +80,12 @@ exports['#.write() method'] = {
 			return;
 		}
 
-		test.expect(3);
+		test.expect(4);
 		function onFailure(err) {
 			test.equal(err.name, 'FilePathError', 'FilePathError');
 			test.equal(err.code, 'PATH_IS_DIRECTORY', 'FilePathError code');
-			test.ok(/Cannot write to ([.]+) it is a directory/.test(err.message), 'FilePathError message');
+			test.ok(/^Cannot write to/.test(err.message), 'FilePathError message');
+			test.ok(/it is a directory.$/.test(err.message), 'FilePathError message');
 			return;
 		}
 
@@ -96,13 +97,14 @@ exports['#.write() method'] = {
 	'throws when a path is a directory (sync)': function (test) {
 		var path = FILEPATH.newPath(__dirname);
 
-		test.expect(3);
+		test.expect(4);
 		try {
 			path.write('', {sync: true});
 		} catch (err) {
 			test.equal(err.name, 'FilePathError', 'FilePathError');
 			test.equal(err.code, 'PATH_IS_DIRECTORY', 'FilePathError code');
-			test.ok(/Cannot write to ([.]+) it is a directory/.test(err.message), 'FilePathError message');
+			test.ok(/^Cannot write to/.test(err.message), 'FilePathError message');
+			test.ok(/it is a directory.$/.test(err.message), 'FilePathError message');
 		}
 
 		test.done();
