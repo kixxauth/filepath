@@ -1,10 +1,8 @@
-var UTIL = require('util')
-	, FS   = require('fs')
-	, PATH = require('path')
-
-	, Promise = require('bluebird')
-	, slice   = Array.prototype.slice
-
+var UTIL = require('util');
+var FS = require('fs');
+var PATH = require('path');
+var Promise = require('bluebird');
+var slice = Array.prototype.slice;
 
 function FilePathError(message) {
 	Error.call(this);
@@ -16,12 +14,12 @@ UTIL.inherits(FilePathError, Error);
 
 function FilePath(path) {
 	this.path = path;
-};
+}
 
 FilePath.prototype = {
 
 	resolve: function resolve(to) {
-		var p
+		var p;
 		if (typeof to === 'string') {
 			p = PATH.resolve(this.path, to);
 		} else {
@@ -31,13 +29,12 @@ FilePath.prototype = {
 	},
 
 	relative: function relative(to) {
-		to = typeof to === 'string' ? to : process.cwd();
-		return PATH.relative(this.path, to);
+		return PATH.relative(this.path, typeof to === 'string' ? to : process.cwd());
 	},
 
 	append: function append() {
 		// Join an arbitrary number of arguments.
-		var args = [this.path].concat(slice.call(arguments))
+		var args = [this.path].concat(slice.call(arguments));
 		return FilePath.create.apply(null, args);
 	},
 
@@ -62,31 +59,33 @@ FilePath.prototype = {
 	},
 
 	exists: function exists() {
-		return FS.existsSync(this.path) ? true : false;
+		return Boolean(FS.existsSync(this.path));
 	},
 
 	isFile: function isFile() {
+		var stats;
 		try {
-			var stats = FS.statSync(this.path);
+			stats = FS.statSync(this.path);
 		} catch (err) {
 			if (err.code === 'ENOENT') {
 				return false;
 			}
 			throw err;
 		}
-		return !!stats.isFile();
+		return Boolean(stats.isFile());
 	},
 
 	isDirectory: function isDirectory() {
+		var stats;
 		try {
-			var stats = FS.statSync(this.path);
+			stats = FS.statSync(this.path);
 		} catch (err) {
 			if (err.code === 'ENOENT') {
 				return false;
 			}
 			throw err;
 		}
-		return !!stats.isDirectory();
+		return Boolean(stats.isDirectory());
 	},
 
 	newReadStream: function newReadStream(opts) {
@@ -95,7 +94,7 @@ FilePath.prototype = {
 
 	newWriteStream: function newWriteStream(opts) {
 		opts = opts || (opts || {});
-		if (opts.encoding === void 0) {
+		if (typeof opts.encoding === 'undefined') {
 			opts.encoding = 'utf8';
 		}
 		return FS.createWriteStream(this.path, opts);
@@ -104,22 +103,22 @@ FilePath.prototype = {
 	read: function read(opts) {
 		opts = (opts || Object.create(null));
 
-		if (opts.encoding === void 0) {
+		if (typeof opts.encoding === 'undefined') {
 			opts.encoding = 'utf8';
 		}
 
-		var self = this
-			, promise
+		var self = this;
+		var promise;
 
-		function handleError(err, reject) {
-				if (err.code === 'ENOENT') {
-					return null;
-				} else if (err.code === 'EISDIR') {
-					err = new FilePathError("Cannot read '"+ self.path +"'; it is a directory.");
-					err.code = "PATH_IS_DIRECTORY";
-					throw err;
-				}
+		function handleError(err) {
+			if (err.code === 'ENOENT') {
+				return null;
+			} else if (err.code === 'EISDIR') {
+				err = new FilePathError('Cannot read "' + self.path + '"; it is a directory.');
+				err.code = 'PATH_IS_DIRECTORY';
 				throw err;
+			}
+			throw err;
 		}
 
 		if (opts.sync || opts.synchronous) {
@@ -150,23 +149,23 @@ FilePath.prototype = {
 	write: function write(data, opts) {
 		opts = (opts || Object.create(null));
 
-		var self = this
-			, promise
-			, dir = this.dirname()
+		var self = this;
+		var promise;
+		var dir = this.dirname();
 
 		if (!dir.exists()) {
 			dir.mkdir();
 		}
 
-		function handleError(err, reject) {
-				if (err.code === 'ENOENT') {
-					return null;
-				} else if (err.code === 'EISDIR') {
-					err = new FilePathError("Cannot write to '"+ self.path +"'; it is a directory.");
-					err.code = "PATH_IS_DIRECTORY";
-					throw err;
-				}
+		function handleError(err) {
+			if (err.code === 'ENOENT') {
+				return null;
+			} else if (err.code === 'EISDIR') {
+				err = new FilePathError('Cannot write to "' + self.path + '"; it is a directory.');
+				err.code = 'PATH_IS_DIRECTORY';
 				throw err;
+			}
+			throw err;
 		}
 
 		if (opts.sync || opts.synchronous) {
@@ -180,13 +179,13 @@ FilePath.prototype = {
 
 		promise = new Promise(function (resolve, reject) {
 			FS.writeFile(self.path, data, opts, function (err) {
-				var e
+				var e;
 
 				if (err && err.code === 'ENOENT') {
 					return resolve(null);
 				} else if (err && err.code === 'EISDIR') {
-					e = new FilePathError("Cannot write to '"+ self.path +"'; it is a directory.");
-					e.code = "PATH_IS_DIRECTORY";
+					e = new FilePathError('Cannot write to "' + self.path + '"; it is a directory.');
+					e.code = 'PATH_IS_DIRECTORY';
 					return reject(e);
 				} else if (err) {
 					return reject(err);
@@ -200,9 +199,9 @@ FilePath.prototype = {
 	},
 
 	copy: function copy(opts) {
-		var opts, target
-			, args = slice.call(arguments)
-			, lastArg = args[args.length -1]
+		var target;
+		var args = slice.call(arguments);
+		var lastArg = args[args.length - 1];
 
 		if (!args.length || lastArg instanceof FilePath || typeof lastArg === 'string') {
 			opts = Object.create(null);
@@ -210,7 +209,7 @@ FilePath.prototype = {
 			opts = args.pop();
 		}
 
-		target = FilePath.create.apply(null, args)
+		target = FilePath.create.apply(null, args);
 
 		// Use a buffer.
 		opts.encoding = null;
@@ -224,20 +223,19 @@ FilePath.prototype = {
 			return target.write(contents, opts);
 		}
 
-
 		return this.read(opts).then(copyContents);
 	},
 
-	remove: function remove() {
+	remove: function () {
 		try {
 			FS.unlinkSync(this.path);
 		} catch (e) {}
 		return this;
 	},
 
-	require: function path_require(contextualRequire) {
+	require: function (contextualRequire) {
 		if (typeof contextualRequire !== 'function') {
-			var err = new FilePathError("Must pass a require function to #require().");
+			var err = new FilePathError('Must pass a require function to #require().');
 			err.code = 'NO_REQUIRE_CONTEXT';
 			throw err;
 		}
@@ -245,19 +243,22 @@ FilePath.prototype = {
 	},
 
 	list: function list() {
+		var list;
 		try {
-			var list = FS.readdirSync(this.path);
+			list = FS.readdirSync(this.path);
 		} catch (err) {
 			var e;
 			if (err.code === 'ENOTDIR') {
-				e = new FilePathError("Cannot list '"+ this.path +"'; it is a file.");
-				e.code = "PATH_IS_FILE";
+				e = new FilePathError('Cannot list "' + this.path + '"; it is a file.');
+				e.code = 'PATH_IS_FILE';
 			} else if (err.code === 'ENOENT') {
-				e = new FilePathError("Cannot list '"+ this.path +"'; it does not exist.");
-				e.code = "PATH_NO_EXIST";
+				e = new FilePathError('Cannot list "' + this.path + '"; it does not exist.');
+				e.code = 'PATH_NO_EXIST';
 			}
 
-			if (e) throw e;
+			if (e) {
+				throw e;
+			}
 			throw err;
 		}
 
@@ -267,9 +268,9 @@ FilePath.prototype = {
 	},
 
 	mkdir: function mkdir() {
-		var _this = this
-			, parts = this.resolve().toString().split(PATH.sep)
-			, fullpath
+		var self = this;
+		var parts = this.resolve().toString().split(PATH.sep);
+		var fullpath;
 
 		// Shift off the empty string.
 		parts.shift();
@@ -277,9 +278,11 @@ FilePath.prototype = {
 		fullpath = parts.reduce(function (fullpath, part) {
 			fullpath = fullpath.append(part);
 			if (fullpath.exists()) {
-				if (fullpath.isDirectory()) return fullpath;
-				var e = new FilePathError("Cannot create directory '"+ _this.path +"'; it is a file.");
-				e.code = "PATH_IS_FILE";
+				if (fullpath.isDirectory()) {
+					return fullpath;
+				}
+				var e = new FilePathError('Cannot create directory "' + self.path + '"; it is a file.');
+				e.code = 'PATH_IS_FILE';
 				throw e;
 			}
 
@@ -291,6 +294,7 @@ FilePath.prototype = {
 	},
 
 	recurse: function recurse(callback) {
+		var listing;
 		var p = this.resolve();
 
 		if (!p.isDirectory()) {
@@ -298,7 +302,7 @@ FilePath.prototype = {
 		}
 
 		try {
-			var listing = p.list();
+			listing = p.list();
 		} catch (err) {
 			if (err.code === 'PATH_IS_FILE') {
 				return p;
@@ -326,7 +330,8 @@ FilePath.prototype = {
 FilePath.prototype.dirname = FilePath.prototype.dir;
 
 FilePath.create = function create() {
-	var path, args
+	var path;
+	var args;
 
 	if (arguments.length === 1 && arguments[0]) {
 		path = arguments[0];
@@ -334,8 +339,10 @@ FilePath.create = function create() {
 		path = process.cwd();
 	} else {
 		args = slice.call(arguments).map(function (item) {
-			if (item == void 0) return '';
-			return item +'';
+			if (typeof item === 'undefined' || item === null) {
+				return '';
+			}
+			return String(item);
 		}).filter(FilePath.partsFilter);
 
 		if (args.length < 1) {
@@ -353,25 +360,28 @@ FilePath.root = function root() {
 };
 
 FilePath.home = function home() {
-	var path = process.platform === 'win32' ? process.env.USERPROFILE : process.env.HOME
+	var path = process.platform === 'win32' ? process.env.USERPROFILE : process.env.HOME;
 	return FilePath.create(path);
 };
 
 FilePath.alphaSort = function alphaSort(a, b) {
 	a = a.toString();
 	b = b.toString();
-	if (a < b) return -1;
-	if (a > b) return 1;
+	if (a < b) {
+		return -1;
+	}
+	if (a > b) {
+		return 1;
+	}
 	return 0;
 };
 
 FilePath.partsFilter = function partsFilter(part) {
-	return part ? true : false;
+	return Boolean(part);
 };
 
-
-exports.FilePath      = FilePath;
-exports.create        = exports.newPath = FilePath.create;
-exports.root          = FilePath.root;
-exports.home          = FilePath.home;
+exports.FilePath = FilePath;
+exports.create = exports.newPath = FilePath.create;
+exports.root = FilePath.root;
+exports.home = FilePath.home;
 exports.FilePathError = FilePathError;
