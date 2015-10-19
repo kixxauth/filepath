@@ -12,6 +12,30 @@ function FilePathError(message) {
 }
 UTIL.inherits(FilePathError, Error);
 
+function NotFoundError(message) {
+	FilePathError.call(this);
+	Error.captureStackTrace(this, this.constructor);
+	this.name = this.constructor.name;
+	this.message = message;
+}
+UTIL.inherits(NotFoundError, FilePathError);
+
+function ExpectDirectoryError(message) {
+	FilePathError.call(this);
+	Error.captureStackTrace(this, this.constructor);
+	this.name = this.constructor.name;
+	this.message = message;
+}
+UTIL.inherits(ExpectDirectoryError, FilePathError);
+
+function ExpectFileError(message) {
+	FilePathError.call(this);
+	Error.captureStackTrace(this, this.constructor);
+	this.name = this.constructor.name;
+	this.message = message;
+}
+UTIL.inherits(ExpectFileError, FilePathError);
+
 function FilePath(path) {
 	this.path = path;
 }
@@ -114,7 +138,7 @@ FilePath.prototype = {
 			if (err.code === 'ENOENT') {
 				return null;
 			} else if (err.code === 'EISDIR') {
-				err = new FilePathError('Cannot read "' + self.path + '"; it is a directory.');
+				err = new ExpectFileError('Cannot read "' + self.path + '"; it is a directory.');
 				err.code = 'PATH_IS_DIRECTORY';
 				throw err;
 			}
@@ -234,12 +258,22 @@ FilePath.prototype = {
 	},
 
 	require: function (contextualRequire) {
+		var opError;
 		if (typeof contextualRequire !== 'function') {
-			var err = new FilePathError('Must pass a require function to #require().');
+			var err = new Error('Must pass a require function to #require().');
 			err.code = 'NO_REQUIRE_CONTEXT';
 			throw err;
 		}
-		return contextualRequire(this.path);
+		try {
+			return contextualRequire(this.path);
+		} catch (err) {
+			if (err.code === 'MODULE_NOT_FOUND') {
+				opError = new NotFoundError(err.message);
+				opError.code = err.code;
+				throw opError;
+			}
+			throw err;
+		}
 	},
 
 	list: function list() {
@@ -249,10 +283,10 @@ FilePath.prototype = {
 		} catch (err) {
 			var e;
 			if (err.code === 'ENOTDIR') {
-				e = new FilePathError('Cannot list "' + this.path + '"; it is a file.');
+				e = new ExpectDirectoryError('Cannot list "' + this.path + '"; it is a file.');
 				e.code = 'PATH_IS_FILE';
 			} else if (err.code === 'ENOENT') {
-				e = new FilePathError('Cannot list "' + this.path + '"; it does not exist.');
+				e = new NotFoundError('Cannot list "' + this.path + '"; it does not exist.');
 				e.code = 'PATH_NO_EXIST';
 			}
 
@@ -281,7 +315,7 @@ FilePath.prototype = {
 				if (fullpath.isDirectory()) {
 					return fullpath;
 				}
-				var e = new FilePathError('Cannot create directory "' + self.path + '"; it is a file.');
+				var e = new ExpectDirectoryError('Cannot create directory "' + self.path + '"; it is a file.');
 				e.code = 'PATH_IS_FILE';
 				throw e;
 			}
@@ -385,3 +419,6 @@ exports.create = exports.newPath = FilePath.create;
 exports.root = FilePath.root;
 exports.home = FilePath.home;
 exports.FilePathError = FilePathError;
+exports.NotFoundError = NotFoundError;
+exports.ExpectDirectoryError = ExpectDirectoryError;
+exports.ExpectFileError = ExpectFileError;

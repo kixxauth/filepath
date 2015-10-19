@@ -16,7 +16,7 @@ exports['#read() method'] = {
 			.then(test.done, test.done);
 	},
 
-	'throws when a path is a directory': function (test) {
+	'rejects when a path is a directory': function (test) {
 		var path = FILEPATH.newPath(__dirname);
 
 		function skip(rv) {
@@ -25,12 +25,13 @@ exports['#read() method'] = {
 			return;
 		}
 
-		test.expect(4);
+		test.expect(5);
 		function onFailure(err) {
-			test.equal(err.name, 'FilePathError', 'FilePathError');
-			test.equal(err.code, 'PATH_IS_DIRECTORY', 'FilePathError code');
-			test.ok(/^Cannot read/.test(err.message), 'FilePathError message');
-			test.ok(/it is a directory.$/.test(err.message), 'FilePathError message');
+			test.ok(err instanceof FILEPATH.ExpectFileError, 'Error instanceof');
+			test.equal(err.name, 'ExpectFileError', 'Error name');
+			test.equal(err.code, 'PATH_IS_DIRECTORY', 'Error code');
+			test.ok(/^Cannot read/.test(err.message), 'Error message');
+			test.ok(/it is a directory.$/.test(err.message), 'Error message');
 			return;
 		}
 
@@ -74,16 +75,17 @@ exports['#read() method'] = {
 	},
 
 	'synchronously throws when a path is a directory': function (test) {
-		test.expect(4);
 		var path = FILEPATH.newPath(__dirname);
 
+		test.expect(5);
 		try {
 			path.read({sync: true});
 		} catch (err) {
-			test.equal(err.name, 'FilePathError', 'sync FilePathError');
-			test.equal(err.code, 'PATH_IS_DIRECTORY', 'sync FilePathError code');
-			test.ok(/^Cannot read/.test(err.message), 'FilePathError message');
-			test.ok(/it is a directory.$/.test(err.message), 'FilePathError message');
+			test.ok(err instanceof FILEPATH.ExpectFileError, 'Error instanceof');
+			test.equal(err.name, 'ExpectFileError', 'Error name');
+			test.equal(err.code, 'PATH_IS_DIRECTORY', 'Error code');
+			test.ok(/^Cannot read/.test(err.message), 'Error message');
+			test.ok(/it is a directory.$/.test(err.message), 'Error message');
 		}
 
 		test.done();

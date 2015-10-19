@@ -17,26 +17,30 @@ exports['#list() method'] = {
 
 	'when not a directory': function (test) {
 		var path = FILEPATH.newPath(__filename);
+		test.expect(5);
 		try {
 			path.list();
 		} catch (err) {
-			test.equal(err.name, 'FilePathError', 'FilePathError');
-			test.equal(err.code, 'PATH_IS_FILE', 'FilePathError code');
-			test.ok(/^Cannot list/.test(err.message), 'FilePathError message');
-			test.ok(/it is a file.$/.test(err.message), 'FilePathError message');
+			test.ok(err instanceof FILEPATH.ExpectDirectoryError, 'Error instanceof');
+			test.equal(err.name, 'ExpectDirectoryError', 'Error name');
+			test.equal(err.code, 'PATH_IS_FILE', 'error code');
+			test.ok(/^Cannot list/.test(err.message), 'error message');
+			test.ok(/it is a file.$/.test(err.message), 'error message');
 		}
 		return test.done();
 	},
 
 	'when path does not exist': function (test) {
 		var path = FILEPATH.newPath('foo', 'bar');
+		test.expect(5);
 		try {
 			path.list();
 		} catch (err) {
-			test.equal(err.name, 'FilePathError', 'FilePathError');
-			test.equal(err.code, 'PATH_NO_EXIST', 'FilePathError code');
-			test.ok(/^Cannot list/.test(err.message), 'FilePathError message');
-			test.ok(/it does not exist.$/.test(err.message), 'FilePathError message');
+			test.ok(err instanceof FILEPATH.NotFoundError, 'Error instanceof');
+			test.equal(err.name, 'NotFoundError', 'Error name');
+			test.equal(err.code, 'PATH_NO_EXIST', 'error code');
+			test.ok(/^Cannot list/.test(err.message), 'error message');
+			test.ok(/it does not exist.$/.test(err.message), 'error message');
 		}
 		return test.done();
 	}
@@ -73,17 +77,18 @@ exports['#mkdir() method'] = {
 		return test.done();
 	},
 
-	'throws if a filepath is given': function (test) {
+	'throws if a file is given': function (test) {
 		var path = FILEPATH.newPath(__filename);
 
-		test.expect(4);
+		test.expect(5);
 		try {
 			path.mkdir();
 		} catch (err) {
-			test.equal(err.name, 'FilePathError', 'FilePathError');
-			test.equal(err.code, 'PATH_IS_FILE', 'FilePathError code');
-			test.ok(/^Cannot create directory/.test(err.message), 'FilePathError message');
-			test.ok(/it is a file.$/.test(err.message), 'FilePathError message');
+			test.ok(err instanceof FILEPATH.ExpectDirectoryError, 'Error instanceof');
+			test.equal(err.name, 'ExpectDirectoryError', 'Error name');
+			test.equal(err.code, 'PATH_IS_FILE', 'Error code');
+			test.ok(/^Cannot create directory/.test(err.message), 'Error message');
+			test.ok(/it is a file.$/.test(err.message), 'Error message');
 		}
 
 		return test.done();
