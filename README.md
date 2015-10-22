@@ -35,78 +35,161 @@ var path = filepath.create(__filname);
 It's important to remember that a FilePath instance is *not* a String. The 'path' property of a FilePath instance is the string representation of the FilePath instance, which is the same thing as calling .toString().
 ```JS
 console.log(path);
-// "{ [String: '/Users/kris/projects/filepath/README.md'] path: '/Users/kris/projects/filepath/README.md' }"
+// "{ [String: '/Users/kris/filepath/README.md'] path: '/Users/kris/filepath/README.md' }"
 
 path.path;
 path.valueOf();
 path.toString();
 path + '';
-// "/Users/kris/projects/filepath/README.md"
+// "/Users/kris/filepath/README.md"
 
 assert(path.path === path.toString())
 ```
 
 API Reference
 -------------
-### Class Methods
+
+#### Class Methods
 * [.create()](#create)
 * [.root()](#root)
 * [.home()](#home)
 
+#### Instance Methods
+
+##### Manipulation
+* [#append](#append)
+* [#resolve](#resolve)
+* [#dir](#split)
+* [#copy](#copy)
+* [#remove](#remove)
+* [#relative](#relative) (returns a String)
+
+##### To String
+* [#toString](#toString)
+* [#valueOf](#valueOf)
+* [#basename](#basename)
+* [#extname](#extname)
+* [#split](#split)
+* [#relative](#relative)
+
+##### Tests
+* [#exists](#exists)
+* [#isFile](#isFile)
+* [#isDirectory](#isDirectory)
+
+##### Reading and Writing
+* [#read](#read)
+* [#write](#write)
+* [#require](#require)
+* [#copy](#copy)
+
+##### Streams
+* [#newReadStream](#newReadStream)
+* [#newWriteStream](#newWriteStream)
+
+#### Directories
+* [#mkdir](#mkdir)
+* [#list](#list)
+* [#recurse](#recurse)
+
 ### Class Methods
 
 #### .create()
+Returns a new FilePath instance. Defaults to the current working directory if you don't pass any arguments.
 ```JS
-// Defaults to current working directory if you don't pass any arguments:
 var path = filepath.create();
 assert(path.toString() === process.cwd());
 path.toString();
 // "/Users/kris/projects/filepath"
-
-// Joins multiple arguments into a single path object:
-var path = filepath.create(__dirname, 'foo');
-assert(path.toString() === __dirname + '/foo')
+```
+Joins multiple arguments into a single path object.
+```JS
+var path = filepath.create(__dirname, 'foo', 'bar');
+assert(path.toString() === __dirname + '/foo/bar');
 path.path;
 // "/Users/kris/projects/filepath/foo"
 ```
 
 #### .root()
+Returns a FilePath instance representing the root system path.
 ```JS
-// Handy shortcut class method.
-assert(FP.root().toString() === '/')
+// On a posix system:
+assert(filepath.root().toString() === '/');
 ```
 
 #### .home()
+Returns a FilePath instance representing the users's home directory. This is achieved using environment variables `process.env.HOME` on posix and `process.env.USERPROFILE` on win32.
 ```JS
-// Another handy shortcut class method.
-assert(FP.home().toString() === '/home/kris')
+assert(filepath.home().toString() === '/home/kris');
 ```
 
 ### Instance Methods
 
 #### #append()
+Joins an arbitrary number of arguments and appends them onto the path. Returns a new FilePath instance, leaving the original intact.
 ```JS
-var path = FP.create(__dirname).append('foo', 'bar').append('baz')
-assert(path.toString() === __dirname + '/foo/bar/baz')
+var path1 = filepath.create(__dirname);
+var path2 = path1.append('foo', 'bar');
+var path3 = path1.append('baz');
+
+assert(path1.toString() === __dirname);
+assert(path2.toString() === __dirname + '/foo/bar');
+assert(path3.toString() === __dirname + '/baz');
 ```
 
 #### #resolve()
+Resolves a relative path with this one. Returns a new FilePath instance, leaving the original intact.
 ```JS
-var path = FP.create('/home/kris/filepath', 'lib').resolve('../README.md')
-assert(path.toString() === '/home/kris/filepath/README.md')
-```
+var path = filepath
+  .create('/home/kris/filepath/lib')
+  .resolve('../README.md');
 
-#### #relative()
-```JS
-var path = FP.create('/home/kris/filepath/lib')
-  .relative('/home/kris/filepath/test');
-assert(path.toString() === '../test')
+assert(path.toString() === '/home/kris/filepath/README.md');
 ```
 
 #### #dir()
+Pops off the file or directory basename. The same as doing `../` on a posix system. Returns a new FilePath instance.
 ```JS
-var path = FP.create('/home/kris/filepath').dir();
-assert(path.toString() === '/home/kris')
+var path = filepath.create('/home/kris/filepath').dir();
+
+assert(path.toString() === '/home/kris');
+```
+
+#### #copy()
+Copies the current path to the given path. Resolves with a new FilePath instance representing the new location. Also can be invoked synchronously.
+
+See also: [Promises](#promises) and [Error Handling](#error-handling)
+```JS
+filepath
+  .create(__filename)
+  .copy('/tmp/README.md')
+  .then(function (target) {
+    // The callback value `target` is a new FilePath instance.
+    assert(target.toString() === '/tmp/README.md');
+  })
+  .catch(console.error);
+
+// Pass in mixed parts
+var targetDir = filepath.root().append('tmp');
+filepath
+  .create(__filename)
+  .copy(targetDir, 'README.md');
+
+// Or you can copy a file *synchronously*:
+var target = filepath
+  .create(__filename)
+  .copy('/tmp/README.md', {sync: true});
+assert(target.toString() === '/tmp/README.md');
+```
+
+#### #relative()
+Returns the relative String required to reach the passed in path. Note that #relative() returns a *String* and *not* a FilePath instance.
+```JS
+var rel = filepath
+  .create('/home/kris/filepath/lib')
+  .relative('/home/kris/filepath/test');
+
+assert(rel === '../test');
 ```
 
 #### #basename()
@@ -221,26 +304,6 @@ path.write('Hello world!\n').then(function (returnedPath) {
 var syncPath = FP.create('/tmp/new_file_sync.txt')
 syncPath.write('Overwrite with this text', {sync: true})
 assert(syncPath.read({sync: true}) === 'Hello world!\n')
-```
-
-#### #copy()
-```JS
-var path = FP.create(__filename)
-var originalContent = path.read({sync: true})
-
-// #copy() returns a promise object with #then() and #failure() methods.
-path.copy('/tmp/README.md').then(function (target) {
-  // The callback value (`target`) is a new FilePath instance.
-  assert(target.toString() === '/tmp/README.md')
-  assert(target.read({sync: true}) === originalContent)
-}).failure(console.error)
-
-// Or you can copy a file *synchronously*:
-syncPath = FP.create(__dirname, 'package.json')
-originalSyncContent = syncPath.read({sync: true})
-syncTarget = syncPath.copy('/tmp/package.json')
-assert(syncTarget.toString() === '/tmp/package.json')
-assert(syncTarget.read({sync: true}) === originalSyncContent)
 ```
 
 ## Testing
