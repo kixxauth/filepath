@@ -4,6 +4,11 @@ var PATH = require('path');
 var Promise = require('bluebird');
 var slice = Array.prototype.slice;
 
+//
+// Error Types
+//
+
+// Base Error type for all operational errors.
 function FilePathError(message) {
 	Error.call(this);
 	Error.captureStackTrace(this, this.constructor);
@@ -12,6 +17,7 @@ function FilePathError(message) {
 }
 UTIL.inherits(FilePathError, Error);
 
+// Rejection when an expected path does not exist.
 function NotFoundError(message) {
 	FilePathError.call(this);
 	Error.captureStackTrace(this, this.constructor);
@@ -20,6 +26,7 @@ function NotFoundError(message) {
 }
 UTIL.inherits(NotFoundError, FilePathError);
 
+// Rejection when a directory was expected for a method call.
 function ExpectDirectoryError(message) {
 	FilePathError.call(this);
 	Error.captureStackTrace(this, this.constructor);
@@ -28,6 +35,7 @@ function ExpectDirectoryError(message) {
 }
 UTIL.inherits(ExpectDirectoryError, FilePathError);
 
+// Rejection when a file was expected for a method call.
 function ExpectFileError(message) {
 	FilePathError.call(this);
 	Error.captureStackTrace(this, this.constructor);
@@ -36,6 +44,7 @@ function ExpectFileError(message) {
 }
 UTIL.inherits(ExpectFileError, FilePathError);
 
+// Base FilePath constructor.
 function FilePath(path) {
 	this.path = path;
 }
@@ -363,6 +372,11 @@ FilePath.prototype = {
 // For backwards compatibility:
 FilePath.prototype.dirname = FilePath.prototype.dir;
 
+//
+// Class methods
+//
+
+// Create a new FilePath instance.
 FilePath.create = function create() {
 	var path;
 	var args;
@@ -389,10 +403,12 @@ FilePath.create = function create() {
 	return new FilePath(PATH.resolve(path.toString()));
 };
 
+// Create a new FilePath instance representing the root directory.
 FilePath.root = function root() {
 	return FilePath.create(process.platform === 'win32' ? '\\' : '/');
 };
 
+// Create a new FilePath instance representing the home directory.
 FilePath.home = function home() {
 	var path = process.platform === 'win32' ? process.env.USERPROFILE : process.env.HOME;
 	return FilePath.create(path);
@@ -413,6 +429,10 @@ FilePath.alphaSort = function alphaSort(a, b) {
 FilePath.partsFilter = function partsFilter(part) {
 	return Boolean(part);
 };
+
+//
+// Public API
+//
 
 exports.FilePath = FilePath;
 exports.create = exports.newPath = FilePath.create;
