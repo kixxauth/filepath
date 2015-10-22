@@ -3,12 +3,14 @@ Filepath
 
 A cross platform interface for working with the file system in Node.js programs. Yes, it works with both posix and win32. So there.
 
+[![NPM](https://nodei.co/npm/filepath.png?downloads=true)](https://nodei.co/npm/filepath/)
+
 [![npm version](https://badge.fury.io/js/filepath.svg)](https://badge.fury.io/js/filepath)
 
-[![NPM](https://nodei.co/npm/filepath.png?downloads=true)](https://nodei.co/npm/filepath/)
 __Built by [@kixxauth](https://twitter.com/kixxauth)__
 
-## Installation
+Installation
+------------
 The most common use of Filepath is to use it as a library. In that case, just include it in your Node.js project by adding a line for "filepath" in your `pacakge.json` dependencies. For more information about your `package.json` file, you should check out the npm documentation by running `npm help json`.
 
 Alternatively, you can quickly install Filepath for use in a project by running
@@ -17,9 +19,8 @@ Alternatively, you can quickly install Filepath for use in a project by running
 
 which will install filepath in your `node_modules/` folder.
 
-API Quick Reference
--------------------
-
+Quick Start
+-----------
 ### Load the module
 ```JS
 var filepath = require('filepath');
@@ -44,6 +45,13 @@ path + '';
 
 assert(path.path === path.toString())
 ```
+
+API Reference
+-------------
+### Class Methods
+* [.create()](#create)
+* [.root()](#root)
+* [.home()](#home)
 
 ### Class Methods
 
