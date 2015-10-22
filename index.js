@@ -362,6 +362,10 @@ FilePath.prototype = {
 
 	toString: function toString() {
 		return this.path;
+	},
+
+	valueOf: function valueOf() {
+		return this.path;
 	}
 };
 
