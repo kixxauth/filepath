@@ -71,7 +71,7 @@ exports['#.write() method'] = {
 		test.done();
 	},
 
-	'throws when a path is a directory': function (test) {
+	'rejects when a path is a directory': function (test) {
 		var path = FILEPATH.newPath(__dirname);
 
 		function skip(rv) {
@@ -80,31 +80,34 @@ exports['#.write() method'] = {
 			return;
 		}
 
-		test.expect(4);
+		test.expect(5);
 		function onFailure(err) {
-			test.equal(err.name, 'FilePathError', 'FilePathError');
-			test.equal(err.code, 'PATH_IS_DIRECTORY', 'FilePathError code');
-			test.ok(/^Cannot write to/.test(err.message), 'FilePathError message');
-			test.ok(/it is a directory.$/.test(err.message), 'FilePathError message');
+			test.ok(err instanceof FILEPATH.ExpectFileError, 'instanceof ExpectFileError');
+			test.equal(err.name, 'ExpectFileError', 'Error name');
+			test.equal(err.code, 'PATH_IS_DIRECTORY', 'Error code');
+			test.ok(/^Cannot write to/.test(err.message), 'Error message');
+			test.ok(/it is a directory.$/.test(err.message), 'Error message');
 			return;
 		}
 
 		path.write()
-			.then(skip, onFailure)
-			.then(test.done, test.done);
+			.then(skip)
+			.catch(onFailure)
+			.then(test.done);
 	},
 
 	'throws when a path is a directory (sync)': function (test) {
 		var path = FILEPATH.newPath(__dirname);
 
-		test.expect(4);
+		test.expect(5);
 		try {
 			path.write('', {sync: true});
 		} catch (err) {
-			test.equal(err.name, 'FilePathError', 'FilePathError');
-			test.equal(err.code, 'PATH_IS_DIRECTORY', 'FilePathError code');
-			test.ok(/^Cannot write to/.test(err.message), 'FilePathError message');
-			test.ok(/it is a directory.$/.test(err.message), 'FilePathError message');
+			test.ok(err instanceof FILEPATH.ExpectFileError, 'instanceof ExpectFileError');
+			test.equal(err.name, 'ExpectFileError', 'Error name');
+			test.equal(err.code, 'PATH_IS_DIRECTORY', 'Error code');
+			test.ok(/^Cannot write to/.test(err.message), 'Error message');
+			test.ok(/it is a directory.$/.test(err.message), 'Error message');
 		}
 
 		test.done();

@@ -185,7 +185,7 @@ FilePath.prototype = {
 			if (err.code === 'ENOENT') {
 				return null;
 			} else if (err.code === 'EISDIR') {
-				err = new FilePathError('Cannot write to "' + self.path + '"; it is a directory.');
+				err = new ExpectFileError('Cannot write to "' + self.path + '"; it is a directory.');
 				err.code = 'PATH_IS_DIRECTORY';
 				throw err;
 			}
@@ -208,7 +208,7 @@ FilePath.prototype = {
 				if (err && err.code === 'ENOENT') {
 					return resolve(null);
 				} else if (err && err.code === 'EISDIR') {
-					e = new FilePathError('Cannot write to "' + self.path + '"; it is a directory.');
+					e = new ExpectFileError('Cannot write to "' + self.path + '"; it is a directory.');
 					e.code = 'PATH_IS_DIRECTORY';
 					return reject(e);
 				} else if (err) {
