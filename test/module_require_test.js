@@ -40,4 +40,3 @@ exports['#require() method'] = {
 		return test.done();
 	}
 };
-
