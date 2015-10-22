@@ -212,16 +212,12 @@ FilePath.prototype = {
 
 		promise = new Promise(function (resolve, reject) {
 			FS.writeFile(self.path, data, opts, function (err) {
-				var e;
-
-				if (err && err.code === 'ENOENT') {
-					return resolve(null);
-				} else if (err && err.code === 'EISDIR') {
-					e = new ExpectFileError('Cannot write to "' + self.path + '"; it is a directory.');
-					e.code = 'PATH_IS_DIRECTORY';
-					return reject(e);
-				} else if (err) {
-					return reject(err);
+				if (err) {
+					try {
+						return resolve(handleError(err));
+					} catch (e) {
+						return reject(e);
+					}
 				}
 
 				return resolve(self);
