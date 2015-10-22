@@ -255,14 +255,14 @@ FilePath.prototype = {
 		return this.read(opts).then(copyContents);
 	},
 
-	remove: function () {
+	remove: function remove() {
 		try {
 			FS.unlinkSync(this.path);
 		} catch (e) {}
 		return this;
 	},
 
-	require: function (contextualRequire) {
+	require: function filepathRequire(contextualRequire) {
 		var opError;
 		if (typeof contextualRequire !== 'function') {
 			var err = new Error('Must pass a require function to #require().');
