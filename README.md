@@ -3,7 +3,8 @@ Filepath
 
 A cross platform interface for working with the file system in Node.js programs. Yes, it works with both posix and win32. So there.
 
-[![NPM](https://nodei.co/npm/filepath.png)](https://nodei.co/npm/filepath/)
+[![NPM](https://nodei.co/npm/filepath.png?downloads=true)](https://nodei.co/npm/filepath/)
+[![npm version](https://badge.fury.io/js/filepath.svg)](https://badge.fury.io/js/filepath)
 
 __Built by [@kixxauth](https://twitter.com/kixxauth)__
 
