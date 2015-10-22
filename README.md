@@ -3,9 +3,9 @@ Filepath
 
 A cross platform interface for working with the file system in Node.js programs. Yes, it works with both posix and win32. So there.
 
-[![NPM](https://nodei.co/npm/filepath.png?downloads=true)](https://nodei.co/npm/filepath/)
 [![npm version](https://badge.fury.io/js/filepath.svg)](https://badge.fury.io/js/filepath)
 
+[![NPM](https://nodei.co/npm/filepath.png?downloads=true)](https://nodei.co/npm/filepath/)
 __Built by [@kixxauth](https://twitter.com/kixxauth)__
 
 ## Installation
@@ -22,38 +22,53 @@ API Quick Reference
 
 ### Load the module
 ```JS
-var FP = require('filepath')
+var filepath = require('filepath');
 ```
 
-### Create a new FilePath object
+### Create a new FilePath instance
+FilePath.create just takes a string to create a new path object:
 ```JS
-// FilePath.create just takes a string to create a new path object:
-var path = FP.create(__filname)
-assert(path instanceof FP.FilePath)
+var path = filepath.create(__filname);
+```
 
-// It's important to remember that a FilePath instance is *not* a String.
-// The 'path' property of a FilePath instance is the string representation
-// of the FilePath instance, which is the same thing as calling .toString().
+It's important to remember that a FilePath instance is *not* a String. The 'path' property of a FilePath instance is the string representation of the FilePath instance, which is the same thing as calling .toString().
+```JS
+console.log(path);
+// "{ [String: '/Users/kris/projects/filepath/README.md'] path: '/Users/kris/projects/filepath/README.md' }"
+
+path.path;
+path.valueOf();
+path.toString();
+path + '';
+// "/Users/kris/projects/filepath/README.md"
+
 assert(path.path === path.toString())
-
-// Defaults to current working directory if you don't pass any arguments:
-var path = FP.create()
-assert(path.toString() === process.cwd())
-
-// Joins multiple arguments into a single path object:
-var path = FP.create(__dirname, 'foo')
-assert(path.toString() === __dirname + '/foo')
 ```
 
 ### Class Methods
 
-### .root()
+#### .create()
+```JS
+// Defaults to current working directory if you don't pass any arguments:
+var path = filepath.create();
+assert(path.toString() === process.cwd());
+path.toString();
+// "/Users/kris/projects/filepath"
+
+// Joins multiple arguments into a single path object:
+var path = filepath.create(__dirname, 'foo');
+assert(path.toString() === __dirname + '/foo')
+path.path;
+// "/Users/kris/projects/filepath/foo"
+```
+
+#### .root()
 ```JS
 // Handy shortcut class method.
 assert(FP.root().toString() === '/')
 ```
 
-### .home()
+#### .home()
 ```JS
 // Another handy shortcut class method.
 assert(FP.home().toString() === '/home/kris')
@@ -61,46 +76,46 @@ assert(FP.home().toString() === '/home/kris')
 
 ### Instance Methods
 
-### #append()
+#### #append()
 ```JS
 var path = FP.create(__dirname).append('foo', 'bar').append('baz')
 assert(path.toString() === __dirname + '/foo/bar/baz')
 ```
 
-### #resolve()
+#### #resolve()
 ```JS
 var path = FP.create('/home/kris/filepath', 'lib').resolve('../README.md')
 assert(path.toString() === '/home/kris/filepath/README.md')
 ```
 
-### #relative()
+#### #relative()
 ```JS
 var path = FP.create('/home/kris/filepath/lib')
   .relative('/home/kris/filepath/test');
 assert(path.toString() === '../test')
 ```
 
-### #dir()
+#### #dir()
 ```JS
 var path = FP.create('/home/kris/filepath').dir();
 assert(path.toString() === '/home/kris')
 ```
 
-### #basename()
+#### #basename()
 ```JS
 var path = FP.create('/home/kris/filepath/README.md').basename();
 // Note that basename() returns a *String*
 assert(path === 'README.md')
 ```
 
-### #extname()
+#### #extname()
 ```JS
 var ext = FP.create('/home/kris/filepath/README.md').extname()
 // Note that extname() returns a *String*
 assert(ext === '.md')
 ```
 
-### #split()
+#### #split()
 ```JS
 var parts = FP.create('/home/kris/filepath/README.md').split()
 assert(Array.isArray(parts))
@@ -108,26 +123,26 @@ assert(parts[0] === 'home')
 assert(parts.pop() === 'README.md')
 ```
 
-### #exists()
+#### #exists()
 ```JS
 var path = FP.create(__dirname)
 assert(path.exists())
 assert(!path.append('foo').exists())
 ```
 
-### #isFile()
+#### #isFile()
 ```JS
 var path = FP.create(__filename)
 assert(path.isFile())
 ```
 
-### #isDirectory()
+#### #isDirectory()
 ```JS
 var path = FP.create(__dirname)
 assert(path.isDirectory())
 ```
 
-### #list()
+#### #list()
 ```JS
 var li = FP.create(__dirname).list()
 // Listing a directory returns an Array of fully resolved FilePath instances
@@ -136,7 +151,7 @@ assert(li[4] instanceof FP.FilePath)
 assert(li[4].toString() === '/home/kris/filepath/README.md')
 ```
 
-### #recurse()
+#### #recurse()
 ```JS
 FP.create(__dirname).recurse(function (path) {
   // Each listing is a FilePath object with a fully resolved path string.
@@ -145,7 +160,7 @@ FP.create(__dirname).recurse(function (path) {
 })
 ```
 
-### #mkdir()
+#### #mkdir()
 ```JS
 // Works kinda like 'mkdir -P'.
 var path = FP.create('/tmp/some/new/deep/dir').mkdir()
@@ -154,21 +169,21 @@ assert(path.exists())
 assert(path.isDirectory())
 ```
 
-### #newReadStream()
+#### #newReadStream()
 ```JS
 var FS = require('fs')
 var stream = FP.create(__filename).newReadStream()
 assert(stream instanceof FS.ReadStream)
 ```
 
-### #newWriteStream()
+#### #newWriteStream()
 ```JS
 var FS = require('fs')
 var stream = FP.create('/tmp/new_file.txt').newWriteStream()
 assert(stream instanceof FS.WriteStream)
 ```
 
-### #read()
+#### #read()
 ```JS
 var path = FP.create(__filename)
 
@@ -183,7 +198,7 @@ var readmeContents = path.read({sync: true})
 assert(typeof readmeContents === 'string')
 ```
 
-### #write()
+#### #write()
 ```JS
 var path = FP.create('/tmp/new_file.txt')
 
@@ -200,7 +215,7 @@ syncPath.write('Overwrite with this text', {sync: true})
 assert(syncPath.read({sync: true}) === 'Hello world!\n')
 ```
 
-### #copy()
+#### #copy()
 ```JS
 var path = FP.create(__filename)
 var originalContent = path.read({sync: true})
