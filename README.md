@@ -106,7 +106,7 @@ Joins multiple arguments into a single path object.
 ```JS
 var path = filepath.create(__dirname, 'foo', 'bar');
 assert(path.toString() === __dirname + '/foo/bar');
-path.path;
+path.path; // Same as .toString();
 // "/Users/kris/projects/filepath/foo"
 ```
 
@@ -168,14 +168,18 @@ filepath
     assert(target.toString() === '/tmp/README.md');
   })
   .catch(console.error);
+```
 
-// Pass in mixed parts
+Pass in mixed parts as the target.
+```JS
 var targetDir = filepath.root().append('tmp');
 filepath
   .create(__filename)
   .copy(targetDir, 'README.md');
+```
 
-// Or you can copy a file *synchronously*:
+Or you can copy a file *synchronously*:
+```JS
 var target = filepath
   .create(__filename)
   .copy('/tmp/README.md', {sync: true});
