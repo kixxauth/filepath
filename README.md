@@ -64,8 +64,8 @@ API Reference
 * [#relative](#relative) (returns a String)
 
 ##### To String
-* [#toString](#toString)
-* [#valueOf](#valueOf)
+* [#toString](#tostring)
+* [#valueOf](#valueof)
 * [#basename](#basename)
 * [#extname](#extname)
 * [#split](#split)
@@ -90,6 +90,9 @@ API Reference
 * [#mkdir](#mkdir)
 * [#list](#list)
 * [#recurse](#recurse)
+
+#### [Promises](#promises)
+#### [Error Handling](#error-handling)
 
 ### Class Methods
 
@@ -187,7 +190,7 @@ assert(target.toString() === '/tmp/README.md');
 #### #remove()
 Removes a FilePath. This is done by calling native Node.js `fs.unlinkSync`. There is no asynchronous pattern for #remove(). Returns the FilePath instance.
 ```JS
-var path = FP.create(__filename);
+var path = filepath.create(__filename);
 assert(path.exists());
 path.remove();
 assert(!path.exists());
@@ -208,7 +211,7 @@ Same as #toString().
 #### #basename()
 Returns the last part of the path only. If you pass in the extension string, it will not be included in the returned part. Note that #basename() returns a *String* and *not* a FilePath instance.
 ```JS
-var path = FP.create('/home/kris/projects/filepath/README.md');
+var path = filepath.create('/home/kris/projects/filepath/README.md');
 assert(path.basename() === 'README.md');
 assert(path.basename('.md') === 'README');
 ```
@@ -216,14 +219,14 @@ assert(path.basename('.md') === 'README');
 #### #extname()
 Returns the extension of the last part of the path. Note that #extname() returns a *String* and *not* a FilePath instance.
 ```JS
-var ext = FP.create('/home/kris/projects/filepath/README.md').extname();
+var ext = filepath.create('/home/kris/projects/filepath/README.md').extname();
 assert(ext === '.md');
 ```
 
 #### #split()
 Splits a FilePath into an Array of parts. Each element in the Array is a String.
 ```JS
-var parts = FP.create('/home/kris/projects/filepath/README.md').split();
+var parts = filepath.create('/home/kris/projects/filepath/README.md').split();
 assert(Array.isArray(parts));
 assert(parts[0] === 'home');
 assert(parts.pop() === 'README.md');
@@ -242,7 +245,7 @@ assert(rel === '../test');
 #### #exists()
 Check to see if a FilePath is present on the filesystem. Returns a Boolean.
 ```JS
-var path = FP.create(__dirname);
+var path = filepath.create(__dirname);
 assert(path.exists());
 assert(!path.append('foo').exists());
 ```
@@ -250,23 +253,23 @@ assert(!path.append('foo').exists());
 #### #isFile()
 Check to see if a FilePath is a file type on the filesystem. This is accomplished using `stats.isFile()`. If the FilePath does not exist, #isFile() will return false rather than throwing an Error. Returns a Boolean.
 ```JS
-var path = FP.create(__filename);
+var path = filepath.create(__filename);
 assert(path.isFile());
 ```
 
 #### #isDirectory()
 Check to see if a FilePath is a directory type on the filesystem. This is accomplished using `stats.isDirectory()`. If the FilePath does not exist, #isFile() will return false rather than throwing an Error. Returns a Boolean.
 ```JS
-var path = FP.create(__dirname)
+var path = filepath.create(__dirname)
 assert(path.isDirectory())
 ```
 
 #### #read()
 Reads the contents of a file. This can be called asynchronously (by default) or synchronously. If the path is not a file type, it will throw an `ExpectFileError`. The default encoding is 'utf8', which means you will get a String back. Set the encoding to `null` to get a Buffer instead. Any options passed in (including 'encoding') will be passed to Node.js native `fs.readFile()`.
 
-read() returns a Promise for the file contents unless you run it synchronously. See also: [Promises](#promises) and [Error Handling](#error-handling)
+read() returns a Promise for the file contents unless you run it synchronously. If the file does not exist, it will return null. See also: [Promises](#promises) and [Error Handling](#error-handling)
 ```JS
-var path = FP.create(__filename);
+var path = filepath.create(__filename);
 
 // #read() returns a promise object with #then() and #catch() methods.
 path.read()
@@ -280,11 +283,11 @@ assert(readmeContents instanceof Buffer);
 ```
 
 #### #write()
-Writes a file with the given content. This can be called asynchronously (by default) or synchronously. If the path is not a file type, it will throw an `ExpectFileError`. The default encoding is 'utf8' which means you are passing #write() a String. Set the encoding to `null` to pass a Buffer instead. Any options passed in (including 'encoding') will be passed to Node.js native `fs.writeFile()`.
+Writes a file with the given content. This can be called asynchronously (by default) or synchronously. If the path is not a file type, it will throw an `ExpectFileError`. If the file does not exist, it will be created. The default encoding is 'utf8' which means you are passing #write() a String. Set the encoding to `null` to pass a Buffer instead. Any options passed in (including 'encoding') will be passed to Node.js native `fs.writeFile()`.
 
 write() returns a Promise for the FilePath instance unless you run it synchronously. See also: [Promises](#promises) and [Error Handling](#error-handling)
 ```JS
-var path = FP.create('/tmp/new_file.txt')
+var path = filepath.create('/tmp/new_file.txt')
 
 path.write('Hello world!\n')
   .then(function assertResult(returnedPath) {
@@ -294,7 +297,7 @@ path.write('Hello world!\n')
   .catch(console.error);
 
 // Or you can write a file *synchronously*:
-var syncPath = FP.create('/tmp/new_file_sync.txt');
+var syncPath = filepath.create('/tmp/new_file_sync.txt');
 syncPath.write('Overwrite with this text', {sync: true});
 assert(syncPath.read({sync: true}) === 'Hello world!\n');
 ```
@@ -302,16 +305,16 @@ assert(syncPath.read({sync: true}) === 'Hello world!\n');
 #### #require()
 Require a module using Node.js native `require()`. You'll need to pass in the current `require` function to have the correct context for requiring a module.
 ```JS
-var path = FP.create(__dirname, 'index.js');
+var path = filepath.create(__dirname, 'index.js');
 var filepath = path.require(require);
-assert(FP === filepath);
+assert(filepath === filepath);
 ```
 
 #### #newReadStream()
 Creates a new Read Stream from the FilePath. This can be used in streaming APIs.
 ```JS
 var FS = require('fs');
-var stream = FP.create(__filename).newReadStream();
+var stream = filepath.create(__filename).newReadStream();
 assert(stream instanceof FS.ReadStream);
 ```
 
@@ -319,33 +322,60 @@ assert(stream instanceof FS.ReadStream);
 Creates a new Write Stream from the FilePath. This can be used in streaming APIs.
 ```JS
 var FS = require('fs');
-var stream = FP.create('/tmp/new_file.txt').newWriteStream();
+var stream = filepath.create('/tmp/new_file.txt').newWriteStream();
 assert(stream instanceof FS.WriteStream);
 ```
 
 #### #mkdir()
 Create a directory, unless it already exists. Will create any parent directories which do not already exist. Works kinda like 'mkdir -P'. Returns the FilePath instance.
 ```JS
-var path = FP.create('/tmp/some/new/deep/dir').mkdir();
-assert(path instanceof FP.FilePath);
+var path = filepath.create('/tmp/some/new/deep/dir').mkdir();
+assert(path instanceof filepath.FilePath);
 assert(path.isDirectory());
 ```
 
 #### #list()
 List paths in a directory. Listing a directory returns an Array of fully resolved FilePath instances.
 ```JS
-var li = FP.create(__dirname).list();
-assert(li[4] instanceof FP.FilePath)
-assert(li[4].toString() === '/home/kris/projects/filepath/README.md')
+var li = filepath.create(__dirname).list();
+assert(li[4] instanceof filepath.FilePath);
+assert(li[4].toString() === '/home/kris/projects/filepath/README.md');
 ```
 
 #### #recurse()
 Recursively walk a directory tree. The given callbak with be called with fully resolved FilePath instances. Returns the FilePath instance.
 ```JS
-FP.create(__dirname).recurse(function (path) {
-  assert(path instanceof FP.FilePath);
+filepath.create(__dirname).recurse(function (path) {
+  assert(path instanceof filepath.FilePath);
   assert(path.toString().indexOf(__dirname) === 0);
 });
+```
+
+### Promises
+FilePath uses [Bluebird](https://github.com/petkaantonov/bluebird/) promises from end to end. This provides a full featured and consistent API for some of the most common asynchronous flows in your program.
+
+Bluebird also has a unique and very useful error handling mechanism (see below).
+
+### Error Handling
+FilePath defines 4 Error types:
+* FilePathError
+* NotFoundError
+* ExpectedDirectoryError
+* ExpectedFileError
+
+`NotFoundError`, `ExpectedDirectoryError`, and `ExpectedFileError` are subtypes of `FilePathError`. This allows you to use [Bluebirds error handling](http://bluebirdjs.com/docs/api/catch.html) in .catch() handlers:
+
+```JS
+// Catch only an ExpectFileError
+filepath.create(__dirname)
+  .read()
+  .then(function () { /* This will not be called */ })
+  .catch(filepath.ExpectFileError, function (err) {
+    // handle the ExpectFileError
+  })
+  .catch(function (err) {
+    // handle the unexpected Error
+  });
 ```
 
 ## Testing
