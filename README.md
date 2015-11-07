@@ -58,7 +58,7 @@ API Reference
 ##### Manipulation
 * [#append](#append)
 * [#resolve](#resolve)
-* [#dir](#split)
+* [#dir](#dir)
 * [#copy](#copy)
 * [#remove](#remove)
 * [#relative](#relative) (returns a String)
@@ -73,8 +73,8 @@ API Reference
 
 ##### Tests
 * [#exists](#exists)
-* [#isFile](#isFile)
-* [#isDirectory](#isDirectory)
+* [#isFile](#isfile)
+* [#isDirectory](#isdirectory)
 
 ##### Reading and Writing
 * [#read](#read)
@@ -83,10 +83,10 @@ API Reference
 * [#copy](#copy)
 
 ##### Streams
-* [#newReadStream](#newReadStream)
-* [#newWriteStream](#newWriteStream)
+* [#newReadStream](#newreadstream)
+* [#newWriteStream](#newwritestream)
 
-#### Directories
+##### Directories
 * [#mkdir](#mkdir)
 * [#list](#list)
 * [#recurse](#recurse)
@@ -184,15 +184,26 @@ var target = filepath
 assert(target.toString() === '/tmp/README.md');
 ```
 
-#### #relative()
-Returns the relative String required to reach the passed in path. Note that #relative() returns a *String* and *not* a FilePath instance.
+#### #remove()
+Removes a FilePath. This is done by calling native Node.js `fs.unlinkSync`. There is no asynchronous pattern for #remove(). Returns the FilePath instance.
 ```JS
-var rel = filepath
-  .create('/home/kris/projects/filepath/lib')
-  .relative('/home/kris/projects/filepath/test');
-
-assert(rel === '../test');
+var path = FP.create(__filename);
+assert(path.exists());
+path.remove();
+assert(!path.exists());
 ```
+
+#### #toString()
+Returns the stringified version of a FilePath. This is the same thing as the `.path` attribute, and doing `path + ''`.
+```JS
+path.toString(); // "/Users/kris/filepath/README.md"
+path.path; // "/Users/kris/filepath/README.md"
+path.valueOf(); // "/Users/kris/filepath/README.md"
+path + ''; // "/Users/kris/filepath/README.md"
+```
+
+#### #valueOf()
+Same as #toString().
 
 #### #basename()
 Returns the last part of the path only. If you pass in the extension string, it will not be included in the returned part. Note that #basename() returns a *String* and *not* a FilePath instance.
@@ -218,6 +229,16 @@ assert(parts[0] === 'home');
 assert(parts.pop() === 'README.md');
 ```
 
+#### #relative()
+Returns the relative String required to reach the passed in path. Note that #relative() returns a *String* and *not* a FilePath instance.
+```JS
+var rel = filepath
+  .create('/home/kris/projects/filepath/lib')
+  .relative('/home/kris/projects/filepath/test');
+
+assert(rel === '../test');
+```
+
 #### #exists()
 Check to see if a FilePath is present on the filesystem. Returns a Boolean.
 ```JS
@@ -240,29 +261,50 @@ var path = FP.create(__dirname)
 assert(path.isDirectory())
 ```
 
-#### #list()
-List paths in a directory. Listing a directory returns an Array of fully resolved FilePath instances.
+#### #read()
+Reads the contents of a file. This can be called asynchronously (by default) or synchronously. If the path is not a file type, it will throw an `ExpectFileError`. The default encoding is 'utf8', which means you will get a String back. Set the encoding to `null` to get a Buffer instead. Any options passed in (including 'encoding') will be passed to Node.js native `fs.readFile()`.
+
+read() returns a Promise for the file contents unless you run it synchronously. See also: [Promises](#promises) and [Error Handling](#error-handling)
 ```JS
-var li = FP.create(__dirname).list();
-assert(li[4] instanceof FP.FilePath)
-assert(li[4].toString() === '/home/kris/projects/filepath/README.md')
+var path = FP.create(__filename);
+
+// #read() returns a promise object with #then() and #catch() methods.
+path.read()
+  .then(function assertResult(contents) {
+    assert(typeof contents === 'string');
+  }).catch(console.error);
+
+// Or you can read a file *synchronously*:
+var readmeContents = path.read({sync: true, encoding: null});
+assert(readmeContents instanceof Buffer);
 ```
 
-#### #recurse()
-Recursively walk a directory tree. The given callbak with be called with fully resolved FilePath instances. Returns the FilePath instance.
+#### #write()
+Writes a file with the given content. This can be called asynchronously (by default) or synchronously. If the path is not a file type, it will throw an `ExpectFileError`. The default encoding is 'utf8' which means you are passing #write() a String. Set the encoding to `null` to pass a Buffer instead. Any options passed in (including 'encoding') will be passed to Node.js native `fs.writeFile()`.
+
+write() returns a Promise for the FilePath instance unless you run it synchronously. See also: [Promises](#promises) and [Error Handling](#error-handling)
 ```JS
-FP.create(__dirname).recurse(function (path) {
-  assert(path instanceof FP.FilePath);
-  assert(path.toString().indexOf(__dirname) === 0);
-});
+var path = FP.create('/tmp/new_file.txt')
+
+path.write('Hello world!\n')
+  .then(function assertResult(returnedPath) {
+    assert(returnedPath === path);
+    assert(path.read({sync: true}) === 'Hello world!\n');
+  })
+  .catch(console.error);
+
+// Or you can write a file *synchronously*:
+var syncPath = FP.create('/tmp/new_file_sync.txt');
+syncPath.write('Overwrite with this text', {sync: true});
+assert(syncPath.read({sync: true}) === 'Hello world!\n');
 ```
 
-#### #mkdir()
-Create a directory, unless it already exists. Will create any parent directories which do not already exist. Works kinda like 'mkdir -P'. Returns the FilePath instance.
+#### #require()
+Require a module using Node.js native `require()`. You'll need to pass in the current `require` function to have the correct context for requiring a module.
 ```JS
-var path = FP.create('/tmp/some/new/deep/dir').mkdir();
-assert(path instanceof FP.FilePath);
-assert(path.isDirectory());
+var path = FP.create(__dirname, 'index.js');
+var filepath = path.require(require);
+assert(FP === filepath);
 ```
 
 #### #newReadStream()
@@ -281,42 +323,29 @@ var stream = FP.create('/tmp/new_file.txt').newWriteStream();
 assert(stream instanceof FS.WriteStream);
 ```
 
-#### #read()
-Reads the contents of a file. This can be called asynchronously (by default) or synchronously. If the path is not a file type, it will throw an `ExpectFileError`. The default encoding is 'utf8', which means you will get a String back. Set the encoding to `null` to get a Buffer instead. Any options passed in (includeing 'encoding') will be passed to Node.js native `fs.readFile()`.
-
-#read() returns a Promise for the file contents unless you run it synchronously. See also: [Promises](#promises) and [Error Handling](#error-handling)
+#### #mkdir()
+Create a directory, unless it already exists. Will create any parent directories which do not already exist. Works kinda like 'mkdir -P'. Returns the FilePath instance.
 ```JS
-var path = FP.create(__filename);
-
-// #read() returns a promise object with #then() and #catch() methods.
-path.read()
-  .then(function assertResult(contents) {
-    assert(typeof contents === 'string');
-  }).catch(console.error);
-
-// Or you can read a file *synchronously*:
-var readmeContents = path.read({sync: true, encoding: null});
-assert(readmeContents instanceof Buffer);
+var path = FP.create('/tmp/some/new/deep/dir').mkdir();
+assert(path instanceof FP.FilePath);
+assert(path.isDirectory());
 ```
 
-#### #write()
-Writes a file with the given content. This can be called asynchronously (by default) or synchronously. If the path is not a file type, it will throw an `ExpectFileError`. The default encoding is 'utf8' which means you are passing #write() a String. Set the encoding to `null` to pass a Buffer instead. Any options passed in (includeing 'encoding') will be passed to Node.js native `fs.writeFile()`.
-
-#write() returns a Promise for the FilePath instance unless you run it synchronously. See also: [Promises](#promises) and [Error Handling](#error-handling)
+#### #list()
+List paths in a directory. Listing a directory returns an Array of fully resolved FilePath instances.
 ```JS
-var path = FP.create('/tmp/new_file.txt')
+var li = FP.create(__dirname).list();
+assert(li[4] instanceof FP.FilePath)
+assert(li[4].toString() === '/home/kris/projects/filepath/README.md')
+```
 
-path.write('Hello world!\n')
-  .then(function assertResult(returnedPath) {
-    assert(returnedPath === path);
-    assert(path.read({sync: true}) === 'Hello world!\n');
-  })
-  .catch(console.error);
-
-// Or you can write a file *synchronously*:
-var syncPath = FP.create('/tmp/new_file_sync.txt');
-syncPath.write('Overwrite with this text', {sync: true});
-assert(syncPath.read({sync: true}) === 'Hello world!\n');
+#### #recurse()
+Recursively walk a directory tree. The given callbak with be called with fully resolved FilePath instances. Returns the FilePath instance.
+```JS
+FP.create(__dirname).recurse(function (path) {
+  assert(path instanceof FP.FilePath);
+  assert(path.toString().indexOf(__dirname) === 0);
+});
 ```
 
 ## Testing
