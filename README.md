@@ -91,8 +91,8 @@ API Reference
 * [#list](#list)
 * [#recurse](#recurse)
 
-#### [Promises](#promises)
-#### [Error Handling](#error-handling)
+#### [About Promises](#promises)
+#### [About Error Handling](#error-handling)
 
 ### Class Methods
 
