@@ -1,6 +1,6 @@
 {
   "name"        : "filepath",
-  "version"     : "1.0.0",
+  "version"     : "1.1.0",
   "description" : "A cross platform utility interface for working with filesystems in Node.js.",
   "author"      : "Kris Walker <kris@kixx.name> (http://www.kixx.name/)",
   "scripts": {
