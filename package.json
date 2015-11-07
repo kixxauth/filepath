@@ -13,11 +13,11 @@
   },
   "bugs": "https://github.com/kixxauth/filepath/issues",
   "dependencies": {
-    "bluebird": "2.10.2"
+    "bluebird": "3.0.5"
   },
   "devDependencies": {
     "nodeunit" : "0.9.1",
-    "xo"       : "^0.9.0"
+    "xo"       : "0.10.1"
   },
   "keywords": [
     "filepath",
