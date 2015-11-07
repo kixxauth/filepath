@@ -360,10 +360,10 @@ Bluebird also has a unique and very useful error handling mechanism (see below).
 FilePath defines 4 Error types:
 * FilePathError
 * NotFoundError
-* ExpectedDirectoryError
-* ExpectedFileError
+* ExpectDirectoryError
+* ExpectFileError
 
-`NotFoundError`, `ExpectedDirectoryError`, and `ExpectedFileError` are subtypes of `FilePathError`. This allows you to use [Bluebirds error handling](http://bluebirdjs.com/docs/api/catch.html) in .catch() handlers:
+`NotFoundError`, `ExpectDirectoryError`, and `ExpectFileError` are subtypes of `FilePathError`. This allows you to use [Bluebirds error handling](http://bluebirdjs.com/docs/api/catch.html) in .catch() handlers:
 
 ```JS
 // Catch only an ExpectFileError
