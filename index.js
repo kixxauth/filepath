@@ -64,6 +64,26 @@ class FilePath {
 		return FilePath.create([ this.path ].concat(args));
 	}
 
+	split() {
+		return path.split(this.path).filter((s) => Boolean(s));
+	}
+
+	basename(ext) {
+		return path.basename(this.path, ext);
+	}
+
+	extname() {
+		return path.extname(this.path);
+	}
+
+	toString() {
+		return this.path;
+	}
+
+	valueOf() {
+		return this.path;
+	}
+
 	static create(...paths) {
 		if (paths.length === 0) {
 			return new FilePath(process.cwd());
