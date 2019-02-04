@@ -1,3 +1,7 @@
+'use strict';
+const path = require('path');
+
+
 class FilePath {
 	static get SEP() {
 		return path.sep;
@@ -7,11 +11,11 @@ class FilePath {
 		return path.delimiter;
 	}
 
-	constructor(path) {
+	constructor(p) {
 		Object.defineProperties(this, {
 			path: {
 				enumerable: true,
-				value: path
+				value: p
 			},
 			sep: {
 				enumerable: true,
