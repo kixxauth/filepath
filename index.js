@@ -57,6 +57,13 @@ class FilePath {
 		throw new Error(`Invalid argument ${JSON.stringify(to)}`);
 	}
 
+	append(...args) {
+		if (Array.isArray(args[0])) {
+			return FilePath.create([ this.path ].concat(args[0]));
+		}
+		return FilePath.create([ this.path ].concat(args));
+	}
+
 	static create(...paths) {
 		if (paths.length === 0) {
 			return new FilePath(process.cwd());
