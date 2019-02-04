@@ -1,5 +1,7 @@
 'use strict';
+
 const path = require('path');
+const fs = require('fs');
 
 
 class FilePath {
@@ -26,6 +28,10 @@ class FilePath {
 				value: FilePath.DELIMITER
 			}
 		});
+	}
+
+	stats(options = {}) {
+		return fs.statSync(this.path, options);
 	}
 
 	resolve(...paths) {
