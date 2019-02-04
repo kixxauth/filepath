@@ -4,12 +4,17 @@
   "description": "A cross platform utility interface for working with filesystems in Node.js.",
   "author": "Kris Walker <kris@kixx.name> (http://www.kixx.name/)",
   "scripts": {
+    "test": "eslint ./",
+    "lint": "eslint ./"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/kixxauth/filepath.git"
   },
   "bugs": "https://github.com/kixxauth/filepath/issues",
+  "devDependencies": {
+    "eslint": "5.13.0"
+  },
   "keywords": [
     "filepath",
     "files",
