@@ -388,7 +388,7 @@ You should see the test results output.
 
 Copyright and License
 ---------------------
-Copyright (c) 2013-2015 by Kris Walker <kris@kixx.name> (http://www.kixx.name).
+Copyright (c) 2013-2019 by Kris Walker <kris@kixx.name> (http://www.kixx.name).
 
 Unless otherwise indicated, all source code is licensed under the MIT license.
 See LICENSE for details.
