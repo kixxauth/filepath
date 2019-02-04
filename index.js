@@ -58,25 +58,25 @@ class FilePath {
 	}
 
 	static create(...paths) {
-		let thisPath;
-
-		if (paths.length > 0 && paths[0]) {
-			thisPath = paths[0];
-		} else if (paths.length === 0) {
-			thisPath = process.cwd();
-		} else {
-			const filteredPaths = paths
-				.filter((str) => {
-					return Boolean(str);
-				})
-				.map((str) => {
-					return String(str);
-				});
-
-			thisPath = path.join.apply(path, filteredPaths);
+		if (paths.length === 0) {
+			return new FilePath(process.cwd());
 		}
 
-		return new FilePath(thisPath);
+		let pathStrings;
+
+		if (Array.isArray(paths[0])) {
+			pathStrings = paths[0];
+		} else {
+			pathStrings = paths;
+		}
+
+		const filteredPaths = pathStrings.filter((str) => {
+			return Boolean(str);
+		}).map((str) => {
+			return String(str);
+		});
+
+		return new FilePath(path.join.apply(path, filteredPaths));
 	}
 }
 
