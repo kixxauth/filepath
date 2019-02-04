@@ -35,7 +35,20 @@ class FilePath {
 			throw new Error(`Invalid argument ${JSON.stringify(p)} at [${i}]`);
 		});
 
+		strings.unshift(this.path);
+
 		return new FilePath(path.resolve.apply(path, strings));
+	}
+
+	relative(to) {
+		if (typeof to === 'string') {
+			return new FilePath(path.relative(this.path, to));
+		}
+		if (to && typeof to.path === 'string') {
+			return new FilePath(path.relative(this.path, to.path));
+		}
+
+		throw new Error(`Invalid argument ${JSON.stringify(to)}`);
 	}
 
 	static create(...paths) {
