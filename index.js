@@ -28,6 +28,16 @@ class FilePath {
 		});
 	}
 
+	resolve(...paths) {
+		const strings = paths.map((p, i) => {
+			if (typeof p === 'string') return p;
+			if (p && typeof p.path === 'string') return p.path;
+			throw new Error(`Invalid argument ${JSON.stringify(p)} at [${i}]`);
+		});
+
+		return new FilePath(path.resolve.apply(path, strings));
+	}
+
 	static create(...paths) {
 		let thisPath;
 
