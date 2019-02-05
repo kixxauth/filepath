@@ -13,6 +13,10 @@ class Filepath {
 		return path.delimiter;
 	}
 
+	static join(...args) {
+		return path.join.apply(path, args);
+	}
+
 	constructor(p) {
 		Object.defineProperties(this, {
 			path: {
@@ -65,7 +69,7 @@ class Filepath {
 	}
 
 	split() {
-		return path.split(this.path).filter((s) => Boolean(s));
+		return this.path.split(Filepath.SEP).filter((s) => Boolean(s));
 	}
 
 	basename(ext) {
