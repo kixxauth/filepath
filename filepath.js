@@ -98,6 +98,16 @@ class Filepath {
 		}
 	}
 
+	createReadStream(options = {}) {
+		const opts = Object.assign({ encoding: 'utf8' }, options);
+		return fs.createReadStream(this.path, opts);
+	}
+
+	createWriteStream(options = {}) {
+		const opts = Object.assign({ encoding: 'utf8' }, options);
+		return fs.createWriteStream(this.path, opts);
+	}
+
 	split() {
 		return this.path.split(Filepath.SEP).filter((s) => Boolean(s));
 	}

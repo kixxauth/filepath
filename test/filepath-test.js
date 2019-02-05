@@ -1,9 +1,13 @@
 'use strict';
 
-const { assert } = require('kixx-assert');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
+
+const { assert } = require('kixx-assert');
+
 const Filepath = require('../filepath.js');
+
 
 module.exports = (test) => {
 	test.describe('class enum constants', (t) => {
@@ -195,6 +199,70 @@ module.exports = (test) => {
 		t.describe('when path is a directory', (t1) => {
 			const subject = Filepath.create(__dirname);
 			assert.isEqual(true, subject.isDirectory());
+		});
+	});
+
+	test.describe('createReadStream() and createWriteStream()', (t) => {
+		let fixture = null;
+		let result = null;
+		let sampleChunk;
+
+		function copyAndReadFile(src, dest) {
+			return new Promise((resolve, reject) => {
+				const readStream = src.createReadStream();
+				const writeStream = dest.createWriteStream();
+
+				readStream.once('error', reject);
+				writeStream.once('error', reject);
+
+				readStream.on('data', (chunk) => {
+					sampleChunk = chunk;
+				});
+
+				writeStream.once('finish', () => {
+					fs.readFile(dest.path, (err, buff) => {
+						if (err) {
+							return reject(err);
+						}
+						resolve(buff.toString());
+					});
+				});
+
+				readStream.pipe(writeStream);
+			});
+		}
+
+		function readFile(src) {
+			return new Promise((resolve, reject) => {
+				fs.readFile(src.path, (err, buff) => {
+					if (err) {
+						return reject(err);
+					}
+					resolve(buff.toString());
+				});
+			});
+		}
+
+		t.before((done) => {
+			const src = Filepath.create(__filename);
+			const dest = Filepath.create(os.tmpdir()).append(`filepath-test-${Date.now()}.js`);
+
+			copyAndReadFile(src, dest)
+				.then((res) => {
+					result = res;
+					return readFile(src);
+				})
+				.then((res) => {
+					fixture = res;
+					done();
+				})
+				.catch(done);
+		});
+
+		t.it('reads and writes in utf8 by default', () => {
+			assert.isEqual('string', typeof sampleChunk);
+			assert.isNonEmptyString(fixture);
+			assert.isEqual(fixture, result);
 		});
 	});
 
