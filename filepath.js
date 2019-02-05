@@ -108,6 +108,50 @@ class Filepath {
 		return fs.createWriteStream(this.path, opts);
 	}
 
+	readFile(options = {}) {
+		const opts = Object.assign({
+			encoding: 'utf8',
+			sync: false
+		}, options);
+
+		const { sync } = opts;
+		delete opts.sync;
+
+		const handleError = (err) => {
+			if (err.code === 'ENOENT') {
+				return null;
+			} else if (err.code === 'EISDIR') {
+				err = new Error(`Cannot read "${this.path}"; it is a directory.`);
+				err.code = 'PATH_IS_DIRECTORY';
+				Error.captureStackTrace(err, this.readFile);
+				throw err;
+			}
+			throw err;
+		};
+
+		if (sync) {
+			try {
+				return fs.readFileSync(this.path, opts);
+			} catch (err) {
+				return handleError(err);
+			}
+		}
+
+		return new Promise((resolve, reject) => {
+			fs.readFile(this.path, opts, (err, data) => {
+				if (err) {
+					try {
+						return resolve(handleError(err));
+					} catch (e) {
+						return reject(e);
+					}
+				}
+
+				return resolve(data);
+			});
+		});
+	}
+
 	split() {
 		return this.path.split(Filepath.SEP).filter((s) => Boolean(s));
 	}

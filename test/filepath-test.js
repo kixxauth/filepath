@@ -266,6 +266,117 @@ module.exports = (test) => {
 		});
 	});
 
+	test.describe('readFile()', (t1) => {
+		t1.describe('sync with invalid path', (t) => {
+			const subject = Filepath.create(__dirname, 'foo');
+			let result;
+
+			t.before((done) => {
+				try {
+					result = subject.readFile({ sync: true });
+				} catch (err) {
+					return done(err);
+				}
+				done();
+			});
+
+			t.it('returns null', () => {
+				assert.isEqual(null, result);
+			});
+		});
+
+		t1.describe('sync with directory', (t) => {
+			const subject = Filepath.create(__dirname);
+			let result;
+
+			t.before((done) => {
+				try {
+					result = subject.readFile({ sync: true });
+				} catch (err) {
+					result = err;
+				}
+				done();
+			});
+
+			t.it('rejects with an error', () => {
+				assert.isEqual('PATH_IS_DIRECTORY', result.code);
+				assert.isEqual(`Cannot read "${subject.path}"; it is a directory.`, result.message);
+			});
+		});
+
+		t1.describe('sync with valid file', (t) => {
+			const subject = Filepath.create(__filename);
+			let result;
+
+			t.before((done) => {
+				try {
+					result = subject.readFile({ sync: true });
+				} catch (err) {
+					return done(err);
+				}
+				done();
+			});
+
+			t.it('returns file contents', () => {
+				assert.isNonEmptyString(result);
+				assert.isOk(result.startsWith("'use strict'"));
+			});
+		});
+
+		t1.describe('async with invalid path', (t) => {
+			const subject = Filepath.create(__dirname, 'foo');
+			let result;
+
+			t.before((done) => {
+				subject.readFile().then((text) => {
+					result = text;
+					done();
+				}).catch(done);
+			});
+
+			t.it('returns null', () => {
+				assert.isEqual(null, result);
+			});
+		});
+
+		t1.describe('async with directory', (t) => {
+			const subject = Filepath.create(__dirname);
+			let result;
+
+			t.before((done) => {
+				subject.readFile().then((text) => {
+					result = text;
+					done();
+				}).catch((err) => {
+					result = err;
+					done();
+				});
+			});
+
+			t.it('rejects with an error', () => {
+				assert.isEqual('PATH_IS_DIRECTORY', result.code);
+				assert.isEqual(`Cannot read "${subject.path}"; it is a directory.`, result.message);
+			});
+		});
+
+		t1.describe('async with valid file', (t) => {
+			const subject = Filepath.create(__filename);
+			let result;
+
+			t.before((done) => {
+				subject.readFile().then((text) => {
+					result = text;
+					done();
+				}).catch(done);
+			});
+
+			t.it('returns file contents', () => {
+				assert.isNonEmptyString(result);
+				assert.isOk(result.startsWith("'use strict'"));
+			});
+		});
+	});
+
 	test.describe('split()', (t) => {
 		const subject = Filepath.create(__filename).split();
 		const parts = __filename.split(path.sep).filter((s) => Boolean(s));
