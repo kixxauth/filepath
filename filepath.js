@@ -72,6 +72,10 @@ class Filepath {
 		return new Filepath(path.dirname(this.path));
 	}
 
+	exists() {
+		return fs.existsSync(this.path);
+	}
+
 	split() {
 		return this.path.split(Filepath.SEP).filter((s) => Boolean(s));
 	}

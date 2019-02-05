@@ -157,6 +157,17 @@ module.exports = (test) => {
 		});
 	});
 
+	test.describe('exists()', (t) => {
+		t.describe('when path does not exist', (t1) => {
+			const subject = Filepath.create(__dirname).append('foo.js');
+			assert.isEqual(false, subject.exists());
+		});
+		t.describe('when path exists', (t2) => {
+			const subject = Filepath.create(__dirname).append('filepath-test.js');
+			assert.isEqual(true, subject.exists());
+		});
+	});
+
 	test.describe('split()', (t) => {
 		const subject = Filepath.create(__filename).split();
 		const parts = __filename.split(path.sep).filter((s) => Boolean(s));
