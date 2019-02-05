@@ -256,63 +256,7 @@ module.exports = (test) => {
 	});
 
 	test.describe('readFile()', (t1) => {
-		t1.describe('sync with invalid path', (t) => {
-			const subject = Filepath.create(__dirname, 'foo');
-			let result;
-
-			t.before((done) => {
-				try {
-					result = subject.readFile({ sync: true });
-				} catch (err) {
-					return done(err);
-				}
-				done();
-			});
-
-			t.it('returns null', () => {
-				assert.isEqual(null, result);
-			});
-		});
-
-		t1.describe('sync with directory', (t) => {
-			const subject = Filepath.create(__dirname);
-			let result;
-
-			t.before((done) => {
-				try {
-					result = subject.readFile({ sync: true });
-				} catch (err) {
-					result = err;
-				}
-				done();
-			});
-
-			t.it('rejects with an error', () => {
-				assert.isEqual('PATH_IS_DIRECTORY', result.code);
-				assert.isEqual(`Cannot read "${subject.path}"; it is a directory.`, result.message);
-			});
-		});
-
-		t1.describe('sync with valid file', (t) => {
-			const subject = Filepath.create(__filename);
-			let result;
-
-			t.before((done) => {
-				try {
-					result = subject.readFile({ sync: true });
-				} catch (err) {
-					return done(err);
-				}
-				done();
-			});
-
-			t.it('returns file contents', () => {
-				assert.isNonEmptyString(result);
-				assert.isOk(result.startsWith("'use strict'"));
-			});
-		});
-
-		t1.describe('async with invalid path', (t) => {
+		t1.describe('with invalid path', (t) => {
 			const subject = Filepath.create(__dirname, 'foo');
 			let result;
 
@@ -328,7 +272,7 @@ module.exports = (test) => {
 			});
 		});
 
-		t1.describe('async with directory', (t) => {
+		t1.describe('with directory', (t) => {
 			const subject = Filepath.create(__dirname);
 			let result;
 
@@ -343,12 +287,12 @@ module.exports = (test) => {
 			});
 
 			t.it('rejects with an error', () => {
-				assert.isEqual('PATH_IS_DIRECTORY', result.code);
-				assert.isEqual(`Cannot read "${subject.path}"; it is a directory.`, result.message);
+				assert.isEqual('EISDIR', result.code);
+				assert.isEqual(`EISDIR: illegal operation on a directory, read ${subject.path}`, result.message);
 			});
 		});
 
-		t1.describe('async with valid file', (t) => {
+		t1.describe('with valid file', (t) => {
 			const subject = Filepath.create(__filename);
 			let result;
 
@@ -367,75 +311,7 @@ module.exports = (test) => {
 	});
 
 	test.describe('writeFile()', (t1) => {
-		t1.describe('sync with new path', (t) => {
-			const subject = Filepath.create(os.tmpdir()).append(`filepath-test-${Date.now()}`, 'new-file');
-			let result;
-			let contents;
-			let exists = true;
-
-			t.before((done) => {
-				try {
-					exists = Boolean(subject.stat());
-					result = subject.writeFile('foobar', { sync: true });
-					contents = fs.readFileSync(subject.path, { encoding: 'utf8' });
-				} catch (err) {
-					return done(err);
-				}
-				done();
-			});
-
-			t.it('did not exist', () => {
-				assert.isEqual(false, exists);
-			});
-
-			t.it('returns instance', () => {
-				assert.isEqual(subject, result);
-			});
-
-			t.it('wrote the file', () => {
-				assert.isEqual('foobar', contents);
-			});
-		});
-
-		t1.describe('sync with directory', (t) => {
-			const subject = Filepath.create(__dirname);
-			let result;
-
-			t.before((done) => {
-				try {
-					result = subject.writeFile('foobar', { sync: true });
-				} catch (err) {
-					result = err;
-				}
-				done();
-			});
-
-			t.it('rejects with an error', () => {
-				assert.isEqual('PATH_IS_DIRECTORY', result.code);
-				assert.isEqual(`Cannot write "${subject.path}"; it is a directory.`, result.message);
-			});
-		});
-
-		t1.describe('sync with file => directory', (t) => {
-			const subject = Filepath.create(__filename).append('foo');
-			let result;
-
-			t.before((done) => {
-				try {
-					result = subject.writeFile('foobar', { sync: true });
-				} catch (err) {
-					result = err;
-				}
-				done();
-			});
-
-			t.it('rejects with an error', () => {
-				assert.isEqual('ENOTDIR', result.code);
-				assert.isEqual(`Cannot write to "${subject.dir().path}"; not a directory.`, result.message);
-			});
-		});
-
-		t1.describe('async with new path', (t) => {
+		t1.describe('with new path', (t) => {
 			const subject = Filepath.create(os.tmpdir()).append(`filepath-test-${Date.now()}`, 'async-new-file');
 			let result;
 			let contents;
@@ -468,7 +344,7 @@ module.exports = (test) => {
 			});
 		});
 
-		t1.describe('async with directory', (t) => {
+		t1.describe('with directory', (t) => {
 			const subject = Filepath.create(__dirname);
 			let result;
 
@@ -483,12 +359,12 @@ module.exports = (test) => {
 			});
 
 			t.it('rejects with an error', () => {
-				assert.isEqual('PATH_IS_DIRECTORY', result.code);
-				assert.isEqual(`Cannot write "${subject.path}"; it is a directory.`, result.message);
+				assert.isEqual('EISDIR', result.code);
+				assert.isEqual(`EISDIR: illegal operation on a directory, open '${subject.path}'`, result.message);
 			});
 		});
 
-		t1.describe('async with file => directory', (t) => {
+		t1.describe('with file => directory', (t) => {
 			const subject = Filepath.create(__filename).append('foo');
 			let result;
 
@@ -497,7 +373,10 @@ module.exports = (test) => {
 					subject.writeFile('foobar').then((f) => {
 						result = f;
 						done();
-					}).catch(done);
+					}).catch((err) => {
+						result = err;
+						done();
+					});
 				} catch (err) {
 					result = err;
 					done();
@@ -505,12 +384,45 @@ module.exports = (test) => {
 			});
 
 			t.it('rejects with an error', () => {
-				assert.isEqual('ENOTDIR', result.code);
-				assert.isEqual(`Cannot write to "${subject.dir().path}"; not a directory.`, result.message);
+				assert.isEqual(`Path "${subject.dir().path}" already exists but is not a directory.`, result.message);
 			});
 		});
 	});
 
+	test.describe('listDir()', (t) => {
+		const basenames = [
+			'README.md',
+			'.eslintrc.yml',
+			'.git',
+			'.gitignore',
+			'LICENSE',
+			'filepath.js',
+			'node_modules',
+			'package-lock.json',
+			'package.json',
+			'test',
+			'.npmignore'
+		];
+
+		const subject = Filepath.create(__dirname).dir();
+		let results;
+
+		t.before((done) => {
+			subject.listDir().then((res) => {
+				results = res;
+				done();
+			}).catch(done);
+		});
+
+		t.it('lists full Filepath instances', () => {
+			assert.isOk(Array.isArray(results));
+			assert.isEqual(basenames.length, results.length);
+			results.forEach((p) => {
+				const basename = p.basename();
+				assert.isOk(basenames.includes(basename), `includes ${basename}`);
+			});
+		});
+	});
 
 	test.describe('split()', (t) => {
 		const subject = Filepath.create(__filename).split();
