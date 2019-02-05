@@ -150,6 +150,13 @@ module.exports = (test) => {
 		});
 	});
 
+	test.describe('dirname()', (t) => {
+		t.it('returns the directory name of the path', () => {
+			const subject = Filepath.create(__filename).dir();
+			assert.isEqual(__dirname, subject.path);
+		});
+	});
+
 	test.describe('split()', (t) => {
 		const subject = Filepath.create(__filename).split();
 		const parts = __filename.split(path.sep).filter((s) => Boolean(s));

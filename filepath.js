@@ -68,6 +68,10 @@ class Filepath {
 		return Filepath.create([ this.path ].concat(args));
 	}
 
+	dir() {
+		return new Filepath(path.dirname(this.path));
+	}
+
 	split() {
 		return this.path.split(Filepath.SEP).filter((s) => Boolean(s));
 	}
