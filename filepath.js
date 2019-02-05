@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 
 
-class FilePath {
+class Filepath {
 	static get SEP() {
 		return path.sep;
 	}
@@ -21,11 +21,11 @@ class FilePath {
 			},
 			sep: {
 				enumerable: true,
-				value: FilePath.SEP
+				value: Filepath.SEP
 			},
 			delimiter: {
 				enumerable: true,
-				value: FilePath.DELIMITER
+				value: Filepath.DELIMITER
 			}
 		});
 	}
@@ -43,15 +43,15 @@ class FilePath {
 
 		strings.unshift(this.path);
 
-		return new FilePath(path.resolve.apply(path, strings));
+		return new Filepath(path.resolve.apply(path, strings));
 	}
 
 	relative(to) {
 		if (typeof to === 'string') {
-			return new FilePath(path.relative(this.path, to));
+			return new Filepath(path.relative(this.path, to));
 		}
 		if (to && typeof to.path === 'string') {
-			return new FilePath(path.relative(this.path, to.path));
+			return new Filepath(path.relative(this.path, to.path));
 		}
 
 		throw new Error(`Invalid argument ${JSON.stringify(to)}`);
@@ -59,9 +59,9 @@ class FilePath {
 
 	append(...args) {
 		if (Array.isArray(args[0])) {
-			return FilePath.create([ this.path ].concat(args[0]));
+			return Filepath.create([ this.path ].concat(args[0]));
 		}
-		return FilePath.create([ this.path ].concat(args));
+		return Filepath.create([ this.path ].concat(args));
 	}
 
 	split() {
@@ -86,7 +86,7 @@ class FilePath {
 
 	static create(...paths) {
 		if (paths.length === 0) {
-			return new FilePath(process.cwd());
+			return new Filepath(process.cwd());
 		}
 
 		let pathStrings;
@@ -103,8 +103,8 @@ class FilePath {
 			return String(str);
 		});
 
-		return new FilePath(path.join.apply(path, filteredPaths));
+		return new Filepath(path.join.apply(path, filteredPaths));
 	}
 }
 
-module.exports = FilePath;
+module.exports = Filepath;
