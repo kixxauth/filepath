@@ -112,6 +112,49 @@ class Filepath {
 		return path.isAbsolute(this.path);
 	}
 
+	ensureDir() {
+		const abspath = path.isAbsolute(this.path) ? this.path : path.resolve(this.path);
+		const { sep } = path;
+		const parts = abspath.split(sep);
+		const first = parts.shift();
+
+		const getStat = (thisPath) => {
+			try {
+				return fs.statSync(thisPath);
+			} catch (err) {
+				if (err.code === 'ENOENT') {
+					return null;
+				}
+				Error.captureStackTrace(err, this.writeFile);
+				throw err;
+			}
+		};
+
+		parts.reduce((partialPath, part) => {
+			if (part) {
+				try {
+					const newPath = `${partialPath}${sep}${part}`;
+					const stat = getStat(newPath);
+					if (!stat) {
+						fs.mkdirSync(newPath);
+					} else if (!stat.isDirectory()) {
+						const err = new Error(`Cannot write to "${newPath}"; it already exists and is not a directory.`);
+						Error.captureStackTrace(err, this.ensureDir);
+						err.code = 'ENOTDIR';
+						throw err;
+					}
+					return newPath;
+				} catch (err) {
+					Error.captureStackTrace(err, this.writeFile);
+					throw err;
+				}
+			}
+			return partialPath;
+		}, first);
+
+		return this;
+	}
+
 	createReadStream(options = {}) {
 		const opts = Object.assign({ encoding: 'utf8' }, options);
 		return fs.createReadStream(this.path, opts);
@@ -187,52 +230,18 @@ class Filepath {
 			throw err;
 		};
 
-		const getStat = (thisPath) => {
-			try {
-				return fs.statSync(thisPath);
-			} catch (err) {
-				if (err.code === 'ENOENT') {
-					return null;
-				}
-				Error.captureStackTrace(err, this.writeFile);
-				throw err;
-			}
-		};
-
 		const abspath = path.isAbsolute(this.path) ? this.path : path.resolve(this.path);
-		const { sep } = path;
-		const parts = abspath.split(sep);
-		const first = parts.shift();
-		const last = parts.pop();
+		const dirname = path.dirname(abspath);
+		const dir = Filepath.prototype.stat.call({ path: dirname });
 
-		if (last === '') {
-			const err = new Error(`Cannot write "${this.path}"; it is a directory.`);
-			err.code = 'PATH_IS_DIRECTORY';
+		if (dir && !dir.isDirectory()) {
+			const err = new Error(`Cannot write to "${dirname}"; not a directory.`);
 			Error.captureStackTrace(err, this.writeFile);
+			err.code = 'ENOTDIR';
 			throw err;
+		} else if (!dir) {
+			Filepath.prototype.ensureDir.call({ path: dirname });
 		}
-
-		parts.reduce((partialPath, part) => {
-			if (part) {
-				try {
-					const newPath = `${partialPath}${sep}${part}`;
-					const stat = getStat(newPath);
-					if (!stat) {
-						fs.mkdirSync(newPath);
-					} else if (!stat.isDirectory()) {
-						const err = new Error(`Cannot write to "${newPath}"; it already exists and is not a directory.`);
-						Error.captureStackTrace(err, this.writeFile);
-						err.code = 'ENOTDIR';
-						throw err;
-					}
-					return newPath;
-				} catch (err) {
-					Error.captureStackTrace(err, this.writeFile);
-					throw err;
-				}
-			}
-			return partialPath;
-		}, first);
 
 		const self = this;
 
@@ -258,6 +267,9 @@ class Filepath {
 				return resolve(self);
 			});
 		});
+	}
+
+	copy() {
 	}
 
 	split() {

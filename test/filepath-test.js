@@ -431,7 +431,7 @@ module.exports = (test) => {
 
 			t.it('rejects with an error', () => {
 				assert.isEqual('ENOTDIR', result.code);
-				assert.isEqual(`Cannot write to "${subject.dir().path}"; it already exists and is not a directory.`, result.message);
+				assert.isEqual(`Cannot write to "${subject.dir().path}"; not a directory.`, result.message);
 			});
 		});
 
@@ -506,7 +506,7 @@ module.exports = (test) => {
 
 			t.it('rejects with an error', () => {
 				assert.isEqual('ENOTDIR', result.code);
-				assert.isEqual(`Cannot write to "${subject.dir().path}"; it already exists and is not a directory.`, result.message);
+				assert.isEqual(`Cannot write to "${subject.dir().path}"; not a directory.`, result.message);
 			});
 		});
 	});
