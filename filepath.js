@@ -34,8 +34,16 @@ class Filepath {
 		});
 	}
 
-	stats(options = {}) {
-		return fs.statSync(this.path, options);
+	stat(options = {}) {
+		try {
+			return fs.statSync(this.path, options);
+		} catch (err) {
+			if (err.code === 'ENOENT') {
+				return null;
+			}
+			Error.captureStackTrace(err, this.stat);
+			throw err;
+		}
 	}
 
 	resolve(...paths) {
@@ -76,10 +84,6 @@ class Filepath {
 		return new Filepath(path.dirname(this.path));
 	}
 
-	exists() {
-		return fs.existsSync(this.path);
-	}
-
 	isFile() {
 		try {
 			return fs.statSync(this.path).isFile();
@@ -102,6 +106,10 @@ class Filepath {
 			Error.captureStackTrace(err, this.isDirectory);
 			throw err;
 		}
+	}
+
+	isAbsolute() {
+		return path.isAbsolute(this.path);
 	}
 
 	createReadStream(options = {}) {
@@ -179,18 +187,66 @@ class Filepath {
 			throw err;
 		};
 
+		const getStat = (thisPath) => {
+			try {
+				return fs.statSync(thisPath);
+			} catch (err) {
+				if (err.code === 'ENOENT') {
+					return null;
+				}
+				Error.captureStackTrace(err, this.writeFile);
+				throw err;
+			}
+		};
+
+		const abspath = path.isAbsolute(this.path) ? this.path : path.resolve(this.path);
+		const { sep } = path;
+		const parts = abspath.split(sep);
+		const first = parts.shift();
+		const last = parts.pop();
+
+		if (last === '') {
+			const err = new Error(`Cannot write "${this.path}"; it is a directory.`);
+			err.code = 'PATH_IS_DIRECTORY';
+			Error.captureStackTrace(err, this.writeFile);
+			throw err;
+		}
+
+		parts.reduce((partialPath, part) => {
+			if (part) {
+				try {
+					const newPath = `${partialPath}${sep}${part}`;
+					const stat = getStat(newPath);
+					if (!stat) {
+						fs.mkdirSync(newPath);
+					} else if (!stat.isDirectory()) {
+						const err = new Error(`Cannot write to "${newPath}"; it already exists and is not a directory.`);
+						Error.captureStackTrace(err, this.writeFile);
+						err.code = 'ENOTDIR';
+						throw err;
+					}
+					return newPath;
+				} catch (err) {
+					Error.captureStackTrace(err, this.writeFile);
+					throw err;
+				}
+			}
+			return partialPath;
+		}, first);
+
+		const self = this;
+
 		if (sync) {
 			try {
-				return fs.writeFileSync(this.path, data, opts);
+				fs.writeFileSync(abspath, data, opts);
+				return self;
 			} catch (err) {
 				return handleError(err);
 			}
 		}
 
-		const self = this;
-
 		return new Promise((resolve, reject) => {
-			fs.writeFile(this.path, data, opts, (err) => {
+			fs.writeFile(abspath, data, opts, (err) => {
 				if (err) {
 					try {
 						return resolve(handleError(err));

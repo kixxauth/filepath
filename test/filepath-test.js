@@ -91,10 +91,10 @@ module.exports = (test) => {
 		});
 	});
 
-	test.describe('stats()', (t) => {
+	test.describe('stat()', (t) => {
 		t.it('returns a native Stats instance', () => {
 			const subject = Filepath.create(__filename);
-			const stats = subject.stats();
+			const stats = subject.stat();
 			assert.isDefined(fs.Stats);
 			assert.isOk(stats instanceof fs.Stats);
 		});
@@ -158,17 +158,6 @@ module.exports = (test) => {
 		t.it('returns the directory name of the path', () => {
 			const subject = Filepath.create(__filename).dir();
 			assert.isEqual(__dirname, subject.path);
-		});
-	});
-
-	test.describe('exists()', (t) => {
-		t.describe('when path does not exist', (t1) => {
-			const subject = Filepath.create(__dirname).append('foo.js');
-			assert.isEqual(false, subject.exists());
-		});
-		t.describe('when path exists', (t2) => {
-			const subject = Filepath.create(__dirname).append('filepath-test.js');
-			assert.isEqual(true, subject.exists());
 		});
 	});
 
@@ -376,6 +365,152 @@ module.exports = (test) => {
 			});
 		});
 	});
+
+	test.describe('writeFile()', (t1) => {
+		t1.describe('sync with new path', (t) => {
+			const subject = Filepath.create(os.tmpdir()).append(`filepath-test-${Date.now()}`, 'new-file');
+			let result;
+			let contents;
+			let exists = true;
+
+			t.before((done) => {
+				try {
+					exists = Boolean(subject.stat());
+					result = subject.writeFile('foobar', { sync: true });
+					contents = fs.readFileSync(subject.path, { encoding: 'utf8' });
+				} catch (err) {
+					return done(err);
+				}
+				done();
+			});
+
+			t.it('did not exist', () => {
+				assert.isEqual(false, exists);
+			});
+
+			t.it('returns instance', () => {
+				assert.isEqual(subject, result);
+			});
+
+			t.it('wrote the file', () => {
+				assert.isEqual('foobar', contents);
+			});
+		});
+
+		t1.describe('sync with directory', (t) => {
+			const subject = Filepath.create(__dirname);
+			let result;
+
+			t.before((done) => {
+				try {
+					result = subject.writeFile('foobar', { sync: true });
+				} catch (err) {
+					result = err;
+				}
+				done();
+			});
+
+			t.it('rejects with an error', () => {
+				assert.isEqual('PATH_IS_DIRECTORY', result.code);
+				assert.isEqual(`Cannot write "${subject.path}"; it is a directory.`, result.message);
+			});
+		});
+
+		t1.describe('sync with file => directory', (t) => {
+			const subject = Filepath.create(__filename).append('foo');
+			let result;
+
+			t.before((done) => {
+				try {
+					result = subject.writeFile('foobar', { sync: true });
+				} catch (err) {
+					result = err;
+				}
+				done();
+			});
+
+			t.it('rejects with an error', () => {
+				assert.isEqual('ENOTDIR', result.code);
+				assert.isEqual(`Cannot write to "${subject.dir().path}"; it already exists and is not a directory.`, result.message);
+			});
+		});
+
+		t1.describe('async with new path', (t) => {
+			const subject = Filepath.create(os.tmpdir()).append(`filepath-test-${Date.now()}`, 'async-new-file');
+			let result;
+			let contents;
+			let exists = true;
+
+			t.before((done) => {
+				try {
+					exists = Boolean(subject.stat());
+				} catch (err) {
+					return done(err);
+				}
+
+				subject.writeFile('foobar').then((res) => {
+					result = res;
+					contents = fs.readFileSync(subject.path, { encoding: 'utf8' });
+					done();
+				}).catch(done);
+			});
+
+			t.it('did not exist', () => {
+				assert.isEqual(false, exists);
+			});
+
+			t.it('returns instance', () => {
+				assert.isEqual(subject, result);
+			});
+
+			t.it('wrote the file', () => {
+				assert.isEqual('foobar', contents);
+			});
+		});
+
+		t1.describe('async with directory', (t) => {
+			const subject = Filepath.create(__dirname);
+			let result;
+
+			t.before((done) => {
+				subject.writeFile('foobar').then((text) => {
+					result = text;
+					done();
+				}).catch((err) => {
+					result = err;
+					done();
+				});
+			});
+
+			t.it('rejects with an error', () => {
+				assert.isEqual('PATH_IS_DIRECTORY', result.code);
+				assert.isEqual(`Cannot write "${subject.path}"; it is a directory.`, result.message);
+			});
+		});
+
+		t1.describe('async with file => directory', (t) => {
+			const subject = Filepath.create(__filename).append('foo');
+			let result;
+
+			t.before((done) => {
+				try {
+					subject.writeFile('foobar').then((f) => {
+						result = f;
+						done();
+					}).catch(done);
+				} catch (err) {
+					result = err;
+					done();
+				}
+			});
+
+			t.it('rejects with an error', () => {
+				assert.isEqual('ENOTDIR', result.code);
+				assert.isEqual(`Cannot write to "${subject.dir().path}"; it already exists and is not a directory.`, result.message);
+			});
+		});
+	});
+
 
 	test.describe('split()', (t) => {
 		const subject = Filepath.create(__filename).split();
