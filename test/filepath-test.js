@@ -168,6 +168,36 @@ module.exports = (test) => {
 		});
 	});
 
+	test.describe('isFile()', (t) => {
+		t.describe('when path does not exist', (t1) => {
+			const subject = Filepath.create(__dirname).append('foo.js');
+			assert.isEqual(false, subject.isFile());
+		});
+		t.describe('when path is not a file', (t1) => {
+			const subject = Filepath.create(__dirname);
+			assert.isEqual(false, subject.isFile());
+		});
+		t.describe('when path is a file', (t1) => {
+			const subject = Filepath.create(__dirname).append('filepath-test.js');
+			assert.isEqual(true, subject.isFile());
+		});
+	});
+
+	test.describe('isDirectory()', (t) => {
+		t.describe('when path does not exist', (t1) => {
+			const subject = Filepath.create(__dirname).append('foo');
+			assert.isEqual(false, subject.isDirectory());
+		});
+		t.describe('when path is not a directory', (t1) => {
+			const subject = Filepath.create(__filename);
+			assert.isEqual(false, subject.isDirectory());
+		});
+		t.describe('when path is a directory', (t1) => {
+			const subject = Filepath.create(__dirname);
+			assert.isEqual(true, subject.isDirectory());
+		});
+	});
+
 	test.describe('split()', (t) => {
 		const subject = Filepath.create(__filename).split();
 		const parts = __filename.split(path.sep).filter((s) => Boolean(s));

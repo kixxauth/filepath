@@ -76,6 +76,28 @@ class Filepath {
 		return fs.existsSync(this.path);
 	}
 
+	isFile() {
+		try {
+			return fs.statSync(this.path).isFile();
+		} catch (err) {
+			if (err.code === 'ENOENT') {
+				return false;
+			}
+			throw err;
+		}
+	}
+
+	isDirectory() {
+		try {
+			return fs.statSync(this.path).isDirectory();
+		} catch (err) {
+			if (err.code === 'ENOENT') {
+				return false;
+			}
+			throw err;
+		}
+	}
+
 	split() {
 		return this.path.split(Filepath.SEP).filter((s) => Boolean(s));
 	}
