@@ -42,7 +42,9 @@ class Filepath {
 		const strings = paths.map((p, i) => {
 			if (typeof p === 'string') return p;
 			if (p && typeof p.path === 'string') return p.path;
-			throw new Error(`Invalid argument ${JSON.stringify(p)} at [${i}]`);
+			const err = new Error(`Invalid argument ${JSON.stringify(p)} at [${i}]`);
+			Error.captureStackTrace(err, this.resolve);
+			throw err;
 		});
 
 		strings.unshift(this.path);
@@ -58,7 +60,9 @@ class Filepath {
 			return new Filepath(path.relative(this.path, to.path));
 		}
 
-		throw new Error(`Invalid argument ${JSON.stringify(to)}`);
+		const err = new Error(`Invalid argument ${JSON.stringify(to)}`);
+		Error.captureStackTrace(err, this.relative);
+		throw err;
 	}
 
 	append(...args) {
@@ -83,6 +87,7 @@ class Filepath {
 			if (err.code === 'ENOENT') {
 				return false;
 			}
+			Error.captureStackTrace(err, this.isFile);
 			throw err;
 		}
 	}
@@ -94,6 +99,7 @@ class Filepath {
 			if (err.code === 'ENOENT') {
 				return false;
 			}
+			Error.captureStackTrace(err, this.isDirectory);
 			throw err;
 		}
 	}
@@ -121,11 +127,12 @@ class Filepath {
 			if (err.code === 'ENOENT') {
 				return null;
 			} else if (err.code === 'EISDIR') {
-				err = new Error(`Cannot read "${this.path}"; it is a directory.`);
-				err.code = 'PATH_IS_DIRECTORY';
-				Error.captureStackTrace(err, this.readFile);
-				throw err;
+				const newError = new Error(`Cannot read "${this.path}"; it is a directory.`);
+				newError.code = 'PATH_IS_DIRECTORY';
+				Error.captureStackTrace(newError, this.readFile);
+				throw newError;
 			}
+			Error.captureStackTrace(err, this.readFile);
 			throw err;
 		};
 
@@ -148,6 +155,51 @@ class Filepath {
 				}
 
 				return resolve(data);
+			});
+		});
+	}
+
+	writeFile(data, options = {}) {
+		const opts = Object.assign({
+			encoding: 'utf8',
+			sync: false
+		}, options);
+
+		const { sync } = opts;
+		delete opts.sync;
+
+		const handleError = (err) => {
+			if (err.code === 'EISDIR') {
+				const newError = new Error(`Cannot write "${this.path}"; it is a directory.`);
+				newError.code = 'PATH_IS_DIRECTORY';
+				Error.captureStackTrace(newError, this.writeFile);
+				throw newError;
+			}
+			Error.captureStackTrace(err, this.writeFile);
+			throw err;
+		};
+
+		if (sync) {
+			try {
+				return fs.writeFileSync(this.path, data, opts);
+			} catch (err) {
+				return handleError(err);
+			}
+		}
+
+		const self = this;
+
+		return new Promise((resolve, reject) => {
+			fs.writeFile(this.path, data, opts, (err) => {
+				if (err) {
+					try {
+						return resolve(handleError(err));
+					} catch (e) {
+						return reject(e);
+					}
+				}
+
+				return resolve(self);
 			});
 		});
 	}
