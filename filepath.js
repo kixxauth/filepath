@@ -108,61 +108,52 @@ class Filepath {
 	}
 
 	ensureDir() {
-		const error = new Error('ensureDir error');
-		Error.captureStackTrace(error, this.ensureDir);
+		const abspath = path.isAbsolute(this.path) ? this.path : path.resolve(this.path);
 
-		function decorateError(err) {
-			error.message = err.message;
-			error.code = err.code;
-			return error;
+		function getStat(fpath) {
+			try {
+				return fs.statSync(fpath);
+			} catch (err) {
+				if (err.code === 'ENOENT') {
+					return null;
+				}
+				throw err;
+			}
 		}
 
-		return new Promise((resolve, reject) => {
-			const getStat = (thisPath, cb) => {
-				fs.stat(thisPath, (err, stat) => {
-					if (err && err.code === 'ENOENT') {
-						return cb(null);
-					}
-					if (err) {
-						return reject(decorateError(err));
-					}
-					return cb(stat);
-				});
-			};
+		function makeDirectories(paths) {
+			fs.mkdirSync(paths.pop());
+			if (paths.length > 0) return makeDirectories(paths);
+		}
 
-			const abspath = path.isAbsolute(this.path) ? this.path : path.resolve(this.path);
-			const todo = [];
+		const todo = [];
 
-			const makeDirectories = (paths) => {
-				fs.mkdir(paths.pop(), (err) => {
-					if (err) return reject(decorateError(err));
-					if (paths.length > 0) return makeDirectories(paths);
-					return resolve(this);
-				});
-			};
+		function ensureDir(dir) {
+			const stat = getStat(dir);
 
-			const ensureDir = (dir) => {
-				getStat(dir, (stat) => {
-					if (stat && stat.isDirectory()) {
-						if (todo.length > 0) {
-							return makeDirectories(todo.slice());
-						}
-						return resolve(this);
-					}
+			if (stat && stat.isDirectory()) {
+				if (todo.length > 0) {
+					return makeDirectories(todo.slice());
+				}
+				return;
+			}
 
-					if (stat) {
-						return reject(decorateError(
-							new Error(`Path "${dir}" already exists but is not a directory.`)
-						));
-					}
+			if (stat) {
+				throw new Error(`Path "${dir}" already exists but is not a directory.`);
+			}
 
-					todo.push(dir);
-					return ensureDir(path.dirname(dir));
-				});
-			};
+			todo.push(dir);
+			return ensureDir(path.dirname(dir));
+		}
 
+		try {
 			ensureDir(abspath);
-		});
+		} catch (err) {
+			Error.captureStackTrace(err, this.ensureDir);
+			throw err;
+		}
+
+		return this;
 	}
 
 	createReadStream(options = {}) {
@@ -207,26 +198,28 @@ class Filepath {
 
 		const abspath = path.isAbsolute(this.path) ? this.path : path.resolve(this.path);
 
-		const writeErr = new Error('File write error');
-		Error.captureStackTrace(writeErr, this.writeFile);
+		const error = new Error('File write error');
+		Error.captureStackTrace(error, this.writeFile);
 
-		const writeFile = (fp) => {
-			return new Promise((resolve, reject) => {
-				fs.writeFile(fp, data, opts, (err) => {
-					if (err) return reject(err);
-					return resolve(this);
-				});
+		function decorateError(err) {
+			error.code = err.code;
+			error.message = err.message;
+			return error;
+		}
+
+		return new Promise((resolve, reject) => {
+			const dir = new Filepath(abspath).dir();
+
+			try {
+				dir.ensureDir();
+			} catch (err) {
+				return reject(decorateError(err));
+			}
+
+			fs.writeFile(abspath, data, opts, (err) => {
+				if (err) return reject(decorateError(err));
+				return resolve(this);
 			});
-		};
-
-		const dir = new Filepath(abspath).dir();
-
-		return dir.ensureDir().then(() => {
-			return writeFile(abspath);
-		}).catch((err) => {
-			writeErr.message = err.message;
-			writeErr.code = err.code;
-			return Promise.reject(writeErr);
 		});
 	}
 
