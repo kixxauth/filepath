@@ -31,16 +31,6 @@ class Filepath {
 	}
 
 	stat() {
-		return new Promise((resolve, reject) => {
-			fs.stat(this.path, (err, stat) => {
-				if (err && err.code === 'ENOENT') return resolve(null);
-				if (err) return reject(err);
-				return resolve(stat);
-			});
-		});
-	}
-
-	statSync() {
 		try {
 			return fs.statSync(this.path);
 		} catch (err) {
@@ -266,34 +256,15 @@ class Filepath {
 	readDir() {
 		const abspath = path.isAbsolute(this.path) ? this.path : path.resolve(this.path);
 
-		const error = new Error('readdir error');
-		Error.captureStackTrace(error, this.copy);
-
-		function decorateError(err) {
-			error.code = err.code;
-			error.message = err.message;
-			return error;
-		}
-
-		return new Promise((resolve, reject) => {
-			fs.stat(abspath, (err, stat) => {
-				if (err) return reject(decorateError(err));
-
-				if (!stat.isDirectory()) {
-					const e = new Error(`ENOTDIR: not a directory, readDir '${this.path}'`);
-					e.code = 'ENOTDIR';
-					return reject(decorateError(e));
-				}
-
-				fs.readdir(this.path, (e, list) => {
-					if (e) return reject(decorateError(e));
-
-					return resolve(list.map((basename) => {
-						return this.append(basename);
-					}));
-				});
+		try {
+			return fs.readdirSync(abspath).map((basename) => {
+				return new Filepath(path.join(abspath, basename));
 			});
-		});
+		} catch (err) {
+			if (err.code === 'ENOENT') return [];
+			Error.captureStackTrace(err, this.readDir);
+			throw err;
+		}
 	}
 
 	split() {
