@@ -13,10 +13,6 @@ class Filepath {
 		return path.delimiter;
 	}
 
-	static join(...args) {
-		return path.join.apply(path, args);
-	}
-
 	constructor(p) {
 		Object.defineProperties(this, {
 			path: {
@@ -34,14 +30,23 @@ class Filepath {
 		});
 	}
 
-	stat(options = {}) {
+	stat() {
+		return new Promise((resolve, reject) => {
+			fs.stat(this.path, (err, stat) => {
+				if (err && err.code === 'ENOENT') return resolve(null);
+				if (err) return reject(err);
+				return resolve(stat);
+			});
+		});
+	}
+
+	statSync() {
 		try {
-			return fs.statSync(this.path, options);
+			return fs.statSync(this.path);
 		} catch (err) {
 			if (err.code === 'ENOENT') {
 				return null;
 			}
-			Error.captureStackTrace(err, this.stat);
 			throw err;
 		}
 	}
@@ -126,12 +131,12 @@ class Filepath {
 			const getStat = (thisPath, cb) => {
 				fs.stat(thisPath, (err, stat) => {
 					if (err && err.code === 'ENOENT') {
-						return cb(null, null);
+						return cb(null);
 					}
 					if (err) {
-						return cb(decorateError(err));
+						return reject(decorateError(err));
 					}
-					return cb(null, stat);
+					return cb(stat);
 				});
 			};
 
@@ -140,16 +145,14 @@ class Filepath {
 
 			const makeDirectories = (paths) => {
 				fs.mkdir(paths.pop(), (err) => {
-					if (err) return reject(err);
+					if (err) return reject(decorateError(err));
 					if (paths.length > 0) return makeDirectories(paths);
 					return resolve(this);
 				});
 			};
 
 			const ensureDir = (dir) => {
-				getStat(dir, (err, stat) => {
-					if (err) return reject(err);
-
+				getStat(dir, (stat) => {
 					if (stat && stat.isDirectory()) {
 						if (todo.length > 0) {
 							return makeDirectories(todo.slice());
@@ -226,7 +229,9 @@ class Filepath {
 			});
 		};
 
-		return this.dir().ensureDir().then(() => {
+		const dir = new Filepath(abspath).dir();
+
+		return dir.ensureDir().then(() => {
 			return writeFile(abspath);
 		}).catch((err) => {
 			writeErr.message = err.message;
@@ -245,72 +250,49 @@ class Filepath {
 		}
 		const destPath = path.isAbsolute(destStr) ? destStr : path.resolve(destStr);
 
+		const error = new Error('copy error');
+		Error.captureStackTrace(error, this.copy);
+
+		function decorateError(err) {
+			error.code = err.code;
+			error.message = err.message;
+			return error;
+		}
+
 		return new Promise((resolve, reject) => {
-			const withDir = () => {
-			};
-
-			const withFile = () => {
-			};
-
-			const withStats = (srcStat, destStat) => {
-				if (!srcStat) {
-					const err = new Error(`Source path ${srcPath} does not exist`);
-					Error.captureStackTrace(err, this.copy);
-					return reject(err);
-				}
-
-				if (srcStat.isDirectory()) {
-					if (destStat.isFile()) {
-						const err = new Error('Source path is a directory but dest path is a file');
-						Error.captureStackTrace(err, this.copy);
-						return reject(err);
-					}
-
-					return withDir();
-				}
-
-				if (srcStat.isFile()) {
-					return withFile();
-				}
-
-				const err = new Error(`Source path ${srcPath} is not a file or directory`);
-				Error.captureStackTrace(err, this.copy);
-				return reject(err);
-			};
 		});
 	}
 
-	listDir() {
-		const stat = this.stat();
-		if (!stat) {
-			const err = new Error(`Path "${this.path}" does not exist.`);
-			Error.captureStackTrace(err, this.list);
-			err.code = 'ENOENT';
-			throw err;
-		}
-		if (!stat.isDirectory()) {
-			const err = new Error(`Path "${this.path}" is not a directory.`);
-			Error.captureStackTrace(err, this.list);
-			err.code = 'ENOTDIR';
-			throw err;
+	readDir() {
+		const abspath = path.isAbsolute(this.path) ? this.path : path.resolve(this.path);
+
+		const error = new Error('readdir error');
+		Error.captureStackTrace(error, this.copy);
+
+		function decorateError(err) {
+			error.code = err.code;
+			error.message = err.message;
+			return error;
 		}
 
 		return new Promise((resolve, reject) => {
-			try {
-				fs.readdir(this.path, (err, list) => {
-					if (err) {
-						Error.captureStackTrace(err, this.list);
-						return reject(err);
-					}
+			fs.stat(abspath, (err, stat) => {
+				if (err) return reject(decorateError(err));
+
+				if (!stat.isDirectory()) {
+					const e = new Error(`ENOTDIR: not a directory, readDir '${this.path}'`);
+					e.code = 'ENOTDIR';
+					return reject(decorateError(e));
+				}
+
+				fs.readdir(this.path, (e, list) => {
+					if (e) return reject(decorateError(e));
 
 					return resolve(list.map((basename) => {
 						return this.append(basename);
 					}));
 				});
-			} catch (err) {
-				Error.captureStackTrace(err, this.list);
-				reject(err);
-			}
+			});
 		});
 	}
 
@@ -358,3 +340,4 @@ class Filepath {
 }
 
 module.exports = Filepath;
+

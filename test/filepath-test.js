@@ -92,11 +92,52 @@ module.exports = (test) => {
 	});
 
 	test.describe('stat()', (t) => {
+		const subject = Filepath.create(__filename);
+		let stats;
+
+		t.before((done) => {
+			subject.stat().then((res) => {
+				stats = res;
+				done();
+			}).catch(done);
+		});
+
 		t.it('returns a native Stats instance', () => {
-			const subject = Filepath.create(__filename);
-			const stats = subject.stat();
 			assert.isDefined(fs.Stats);
 			assert.isOk(stats instanceof fs.Stats);
+		});
+	});
+
+	test.describe('stat() ENOENT', (t) => {
+		const subject = Filepath.create(__dirname).append('foo');
+		let stats;
+
+		t.before((done) => {
+			subject.stat().then((res) => {
+				stats = res;
+				done();
+			}).catch(done);
+		});
+
+		t.it('returns null', () => {
+			assert.isEqual(null, stats);
+		});
+	});
+
+	test.describe('statSync()', (t) => {
+		t.it('returns a native Stats instance', () => {
+			const subject = Filepath.create(__filename);
+			const stats = subject.statSync();
+			assert.isDefined(fs.Stats);
+			assert.isOk(stats instanceof fs.Stats);
+		});
+	});
+
+	test.describe('statSync() ENOENT', (t) => {
+		t.it('returns null', () => {
+			const subject = Filepath.create(__dirname).append('foo');
+			const stats = subject.statSync();
+			assert.isEqual(null, stats);
 		});
 	});
 
@@ -319,7 +360,7 @@ module.exports = (test) => {
 
 			t.before((done) => {
 				try {
-					exists = Boolean(subject.stat());
+					exists = Boolean(subject.statSync());
 				} catch (err) {
 					return done(err);
 				}
@@ -389,7 +430,7 @@ module.exports = (test) => {
 		});
 	});
 
-	test.describe('listDir()', (t) => {
+	test.describe('readDir()', (t) => {
 		const basenames = [
 			'README.md',
 			'.eslintrc.yml',
@@ -408,7 +449,7 @@ module.exports = (test) => {
 		let results;
 
 		t.before((done) => {
-			subject.listDir().then((res) => {
+			subject.readDir().then((res) => {
 				results = res;
 				done();
 			}).catch(done);
