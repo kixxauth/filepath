@@ -403,6 +403,7 @@ module.exports = (test) => {
 			'.eslintrc.yml',
 			'.git',
 			'.gitignore',
+			'lib',
 			'LICENSE',
 			'filepath.js',
 			'node_modules',

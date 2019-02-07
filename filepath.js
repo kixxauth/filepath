@@ -223,7 +223,7 @@ class Filepath {
 		});
 	}
 
-	copy(dest) {
+	copy(dest, options = {}) {
 		const srcPath = path.isAbsolute(this.path) ? this.path : path.resolve(this.path);
 		const destStr = typeof dest === 'string' ? dest : (dest && dest.path);
 		if (!destStr) {
@@ -232,18 +232,48 @@ class Filepath {
 			throw err;
 		}
 		const destPath = path.isAbsolute(destStr) ? destStr : path.resolve(destStr);
+		const destFp = new Filepath(destPath);
 
-		const error = new Error('copy error');
-		Error.captureStackTrace(error, this.copy);
+		let sourceStats;
+		let destStats;
 
-		function decorateError(err) {
-			error.code = err.code;
-			error.message = err.message;
-			return error;
+		try {
+			sourceStats = this.stat();
+			destStats = destFp.stat();
+		} catch (err) {
+			Error.captureStackTrace(err, this.copy);
+			throw err;
 		}
 
-		return new Promise((resolve, reject) => {
-		});
+		if (!sourceStats) {
+			const err = new Error(`ENOENT: no such file or directory '${srcPath}'`);
+			err.code = 'ENOENT';
+			Error.captureStackTrace(err);
+			throw err;
+		}
+
+		if (sourceStats.isDirectory() && destStats && !destStats.isDirectory()) {
+			const err = new Error(`ENOTDIR: destination exists but is not a directory '${destPath}'`);
+			err.code = 'ENOTDIR';
+			Error.captureStackTrace(err);
+			throw err;
+		}
+
+		if (sourceStats.isFile() && destStats && !destStats.isFile()) {
+			const err = new Error(`ENOTFILE: destination exists but is not a file '${destPath}'`);
+			err.code = 'ENOTFILE';
+			Error.captureStackTrace(err);
+			throw err;
+		}
+
+		if (destStats.ino && destStats.ino === sourceStats.ino) {
+			const err = new Error(`Source and destination paths are the same '${srcPath}'`);
+			Error.captureStackTrace(err);
+			throw err;
+		}
+
+		const baseError = new Error('copy error');
+		Error.captureStackTrace(baseError, this.copy);
 	}
 
 	readDir() {
